@@ -14,13 +14,12 @@ estado_actual = gl.ESTADO_NORMAL
 # ==========================================
 # 2. EVENTOS MQTT
 # ==========================================
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
+def on_connect(client, userdata, flags, reason_code, properties):
+    if reason_code == 0:
         print("[MQTT] Conectado a EMQX exitosamente.")
-        # Suscribirnos a los comandos que vengan del Dashboard
         client.subscribe(f"{gl.TOPIC_BASE}/control/remoto")
     else:
-        print(f"[MQTT] Error de conexión. Código: {rc}")
+        print(f"[MQTT] Error de conexión. Código: {reason_code}")
 
 def on_message(client, userdata, msg):
     comando = msg.payload.decode('utf-8')
@@ -32,7 +31,7 @@ def on_message(client, userdata, msg):
     })
 
 # Configuración del Cliente MQTT
-client = mqtt.Client(client_id=f"Backend_{gl.CARNE}")
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"Backend_{gl.CARNE}")
 client.on_connect = on_connect
 client.on_message = on_message
 
@@ -90,6 +89,32 @@ try:
 
         # Generar dinámicamente el archivo para ARM64 y reescribirlo
         sensor.generar_archivo_arm64(20)
+
+        # ==========================================
+        # 5. PUENTE ARM64 (Lectura de resultados)
+        # ==========================================
+        try:
+            # En el futuro, aquí agregaremos: os.system("./programa_arm64")
+            
+            with open("resultado.txt", "r", encoding="utf-8") as file:
+                lineas = file.readlines()
+                
+            # Extraer solo los valores numéricos limpiando el formato "CLAVE=VALOR"
+            max_val = int(lineas[0].split("=")[1].strip())
+            min_val = int(lineas[1].split("=")[1].strip())
+            avg_val = int(lineas[2].split("=")[1].strip())
+            count_val = int(lineas[3].split("=")[1].strip())
+            
+            # Guardar en base de datos
+            db.insert_arm64_result(max_val, min_val, avg_val, count_val)
+            
+            # Publicar al Dashboard
+            payload_arm64 = f"MAX:{max_val},MIN:{min_val},AVG:{avg_val},COUNT:{count_val}"
+            client.publish(f"{gl.TOPIC_BASE}/arm64/resultados", payload_arm64)
+            print(f"[ARM64] Resultados procesados -> {payload_arm64}")
+            
+        except Exception as e:
+            print(f"[ARM64] Esperando resultados del módulo ensamblador... Error: {e}")
 
         # Esperar 5 segundos para el siguiente ciclo
         time.sleep(5)

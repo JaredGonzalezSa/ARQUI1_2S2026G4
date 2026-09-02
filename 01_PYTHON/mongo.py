@@ -53,6 +53,19 @@ class MongoDBManager:
         }
         self.col_system_status.insert_one(document)
 
+
+    def insert_arm64_result(self, max_val, min_val, avg_val, count_val):
+        """Registra los cálculos devueltos por el módulo en ensamblador."""
+        document = {
+            "maximo": max_val,
+            "minimo": min_val,
+            "promedio": avg_val,
+            "cantidad": count_val,
+            "timestamp": self.get_timestamp()
+        }
+        self.col_arm64_results.insert_one(document)
+        print("[DB] Resultados de ARM64 guardados en Atlas.")
+
 # Bloque de comprobación aislado
 if __name__ == "__main__":
     db_manager = MongoDBManager()

@@ -1,0 +1,20 @@
+# Entornos virtuales de Python
+venv/
+env/
+.venv/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Variables de entorno (Credenciales de Atlas y EMQX)
+.env
+
+# Archivos generados dinámicamente y binarios de ARM64
+datos.txt
+resultado.txt
+*.o
+*.out
+
+# Node.js (Si el Rol 3 usa frontend web)
+node_modules/

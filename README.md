@@ -1,0 +1,1 @@
+Automation project for Computer Architecture and Assemblers 1 (USAC).It controls and monitors a physical scale model using sensors, actuators, and a hybrid high-level/low-level processing flow.

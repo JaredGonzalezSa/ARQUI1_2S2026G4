@@ -1,1 +1,0 @@
-Diagramas, UML y manuales

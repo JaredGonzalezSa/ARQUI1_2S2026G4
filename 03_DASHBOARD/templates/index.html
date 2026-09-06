@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto 1 | Edificio Inteligente IoT</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* =====================================================
+           COLORES GENERALES
+        ===================================================== */
+        :root {
+            --bg: #f4f7fb;
+            --surface: #ffffff;
+            --surface-soft: #f8fafc;
+            --line: #e5eaf1;
+
+            --text: #172033;
+            --muted: #718096;
+
+            --orange: #f45b16;
+            --orange-dark: #d94708;
+            --orange-soft: #fff1e9;
+
+            --green: #15a860;
+            --green-soft: #eaf8f1;
+
+            --yellow: #e6a700;
+            --red: #dc3545;
+
+            --shadow: 0 8px 24px rgba(31, 45, 61, 0.07);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Inter", Arial, sans-serif;
+        }
+
+        button {
+            border: 0;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        /* =====================================================
+           ESTRUCTURA GENERAL
+        ===================================================== */
+        .app-shell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: 82px 1fr;
+        }
+
+        .topbar {
+            grid-column: 1 / -1;
+            height: 82px;
+            padding: 0 28px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            position: sticky;
+            top: 0;
+            z-index: 20;
+
+            background: white;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .brand-logo {
+            height: 58px;
+            width: auto;
+            display: block;
+        }
+
+        .project-title {
+            text-align: right;
+        }
+
+        .project-title strong {
+            display: block;
+            font-size: 16px;
+        }
+
+        .project-title span {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* =====================================================
+           BARRA LATERAL
+        ===================================================== */
+        .sidebar {
+            height: calc(100vh - 82px);
+            padding: 18px 14px;
+
+            position: sticky;
+            top: 82px;
+
+            background: white;
+            border-right: 1px solid var(--line);
+        }
+
+        .nav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-button {
+            width: 100%;
+            padding: 12px 14px;
+
+            background: transparent;
+            color: #4a5a6a;
+            border-radius: 12px;
+
+            text-align: left;
+            font-weight: 650;
+
+            transition: 0.2s;
+        }
+
+        .nav-button:hover {
+            background: #f6f8fb;
+        }
+
+        .nav-button.active {
+            background: var(--orange);
+            color: white;
+            box-shadow: 0 8px 18px rgba(244, 91, 22, 0.22);
+        }
+
+        /* =====================================================
+           CONTENIDO Y VISTAS
+        ===================================================== */
+        .main-content {
+            min-width: 0;
+            padding: 26px;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .page-heading {
+            margin-bottom: 20px;
+        }
+
+        .page-heading h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .page-heading p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        /* =====================================================
+           PANEL PRINCIPAL
+        ===================================================== */
+        #view-principal {
+            width: 100%;
+        }
+
+        .global-status {
+            min-height: 116px;
+            padding: 20px 22px;
+
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .global-icon {
+            width: 66px;
+            height: 66px;
+
+            display: grid;
+            place-items: center;
+
+            background: var(--green-soft);
+            border-radius: 50%;
+            font-size: 32px;
+        }
+
+        .global-copy span {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .global-copy h2 {
+            margin: 5px 0 3px;
+            font-size: 23px;
+        }
+
+        .global-copy p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .global-time {
+            min-width: 150px;
+            padding-left: 22px;
+
+            border-left: 1px solid var(--line);
+            text-align: right;
+        }
+
+        .global-time .date {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .global-time .time {
+            margin-top: 4px;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .principal-section-title {
+            margin: 20px 0 12px;
+            color: #334155;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        /* 5 sensores: 3 arriba y 2 centrados abajo */
+        .principal-sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+        }
+
+        .principal-sensor-grid .metric-card {
+            grid-column: span 2;
+        }
+
+        .principal-sensor-grid .metric-card:nth-child(4) {
+            grid-column: 2 / span 2;
+        }
+
+        .principal-sensor-grid .metric-card:nth-child(5) {
+            grid-column: 4 / span 2;
+        }
+
+        .metric-card {
+            min-height: 145px;
+            padding: 19px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .metric-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .metric-icon-img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .metric-value {
+            margin-top: 14px;
+            font-size: 27px;
+            font-weight: 800;
+        }
+
+        .status-row {
+            margin-top: 8px;
+
+            display: flex;
+            align-items: center;
+            gap: 7px;
+
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+        }
+
+        /* Actuadores y resultados ARM64 */
+        .principal-actuator-grid,
+        .principal-arm-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .principal-actuator-card {
+            min-height: 105px;
+            padding: 17px 18px;
+        }
+
+        .actuator-title,
+        .arm-label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        .actuator-state {
+            margin-top: 13px;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .arm-card {
+            min-height: 100px;
+            padding: 17px 18px;
+        }
+
+        .arm-value {
+            margin-top: 12px;
+            font-size: 26px;
+            font-weight: 900;
+        }
+
+        /* =====================================================
+           GRÁFICAS
+        ===================================================== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .chart-card {
+            min-height: 290px;
+            padding: 16px;
+        }
+
+        .chart-header {
+            margin-bottom: 12px;
+
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .chart-unit {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .chart-wrap {
+            height: 225px;
+            position: relative;
+        }
+
+        /* =====================================================
+           CONTROL REMOTO
+        ===================================================== */
+        .controls-layout {
+            max-width: 850px;
+            margin: 28px auto 0;
+
+            display: grid;
+            gap: 16px;
+        }
+
+        .controls-panel {
+            padding: 8px;
+        }
+
+        .control-row,
+        .zone-status-row {
+            padding: 16px 22px;
+
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            align-items: center;
+            gap: 34px;
+
+            border-bottom: 1px solid var(--line);
+        }
+
+        .control-row:last-child {
+            border-bottom: 0;
+        }
+
+        .control-name {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .action-btn {
+            min-height: 43px;
+            padding: 10px 14px;
+
+            background: #edf1f5;
+            color: #44505d;
+            border-radius: 11px;
+
+            font-weight: 800;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .action-btn.activo {
+            background: var(--orange);
+            color: white;
+            box-shadow: 0 6px 16px rgba(244, 91, 22, 0.22);
+        }
+
+        .action-btn.activo:hover:not(:disabled) {
+            background: var(--orange-dark);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.58;
+            cursor: not-allowed;
+        }
+
+        /* Estados de los tres cuartos */
+        .zone-status-row {
+            padding-top: 14px;
+            padding-bottom: 14px;
+            background: var(--surface-soft);
+        }
+
+        .zone-status-label {
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .zone-status-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .zone-status-item {
+            min-height: 40px;
+            padding: 8px 10px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+
+            background: white;
+            color: var(--muted);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+
+            font-size: 11px;
+            font-weight: 750;
+        }
+
+        .zone-status-item::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: #a0aec0;
+            border-radius: 50%;
+        }
+
+        .zone-status-item.encendida {
+            background: var(--green-soft);
+            color: var(--green);
+        }
+
+        .zone-status-item.encendida::before {
+            background: var(--green);
+        }
+
+        .zone-status-item.apagada {
+            background: #f1f4f7;
+            color: #667085;
+        }
+
+        .reset-button {
+            min-height: 54px;
+
+            background: var(--red);
+            color: white;
+            border-radius: 13px;
+
+            font-size: 14px;
+            font-weight: 900;
+            box-shadow: 0 10px 22px rgba(220, 53, 69, 0.2);
+        }
+
+        .command-message {
+            min-height: 20px;
+            margin: 0 4px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* =====================================================
+           HISTORIAL
+        ===================================================== */
+        #view-historial.active {
+            min-height: calc(100vh - 134px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-grid {
+            flex: 1;
+
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .history-card {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .history-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--line);
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .history-list {
+            flex: 1;
+            min-height: 0;
+            padding: 4px 14px 10px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 12px 2px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .history-main {
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        .history-sub {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .empty-state {
+            padding: 34px 18px;
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* =====================================================
+           MENSAJE FLOTANTE
+        ===================================================== */
+        .toast {
+            max-width: 340px;
+            padding: 13px 16px;
+
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 50;
+
+            background: #1f2937;
+            color: white;
+            border-radius: 12px;
+
+            font-size: 13px;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: 0.2s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+        @media (max-width: 900px) {
+            .app-shell {
+                display: block;
+            }
+
+            .topbar,
+            .sidebar {
+                position: static;
+            }
+
+            .sidebar {
+                height: auto;
+                border-right: 0;
+                border-bottom: 1px solid var(--line);
+            }
+
+            .nav-list {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .nav-button {
+                text-align: center;
+            }
+
+            .principal-sensor-grid,
+            .principal-actuator-grid,
+            .principal-arm-grid,
+            .charts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .principal-sensor-grid .metric-card,
+            .principal-sensor-grid .metric-card:nth-child(4),
+            .principal-sensor-grid .metric-card:nth-child(5) {
+                grid-column: auto;
+            }
+
+            .control-row,
+            .zone-status-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .history-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .brand-logo {
+                height: 42px;
+            }
+
+            .project-title span {
+                display: none;
+            }
+
+            .main-content {
+                padding: 18px;
+            }
+
+            .nav-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .global-status {
+                grid-template-columns: auto 1fr;
+            }
+
+            .global-time {
+                grid-column: 1 / -1;
+                padding: 12px 0 0;
+                border-left: 0;
+                border-top: 1px solid var(--line);
+                text-align: left;
+            }
+
+            .principal-sensor-grid,
+            .principal-actuator-grid,
+            .principal-arm-grid,
+            .charts-grid,
+            .control-buttons,
+            .zone-status-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .global-icon-img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            display: block;
+        }
+
+    </style>
+</head>
+
+<body>
+<div class="app-shell">
+
+    <!-- HEADER -->
+    <header class="topbar">
+        <img
+            src="{{ url_for('static', filename='img/ecys_logo.png') }}"
+            alt="Logo DTT LCYS"
+            class="brand-logo"
+        >
+
+        <div class="project-title">
+            <strong>PROYECTO 1</strong>
+            <span>Edificio Inteligente IoT</span>
+        </div>
+    </header>
+
+    <!-- BARRA LATERAL -->
+    <aside class="sidebar">
+        <nav class="nav-list">
+            <button class="nav-button active" data-view="principal" onclick="cambiarVista('principal')">
+                Principal
+            </button>
+
+            <button class="nav-button" data-view="graficas" onclick="cambiarVista('graficas')">
+                Gráficas
+            </button>
+
+            <button class="nav-button" data-view="control" onclick="cambiarVista('control')">
+                Control remoto
+            </button>
+
+            <button class="nav-button" data-view="historial" onclick="cambiarVista('historial')">
+                Historial
+            </button>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+
+        <!-- =====================================================
+             PRINCIPAL
+        ====================================================== -->
+        <section id="view-principal" class="view active">
+
+            <div class="card global-status">
+                <div class="global-icon">
+                    <img
+                        src="{{ url_for('static', filename='img/home.png') }}"
+                        alt="Estado global"
+                        class="global-icon-img">
+                </div>
+
+                <div class="global-copy">
+                    <span>Estado global</span>
+                    <h2 id="estadoGlobalPrincipal">---</h2>
+                    <p id="mensajeEstado">Esperando información del sistema...</p>
+                </div>
+
+                <div class="global-time">
+                    <div id="fechaActual" class="date">---</div>
+                    <div id="horaActual" class="time">--:--:--</div>
+                </div>
+            </div>
+
+            <div class="principal-section-title">Sensores:</div>
+
+            <div class="principal-sensor-grid">
+
+                <div class="card metric-card">
+                    <div>
+                        <div class="metric-top">
+                            <img src="{{ url_for('static', filename='img/sensores/temperatura.png') }}"
+                                 alt="Temperatura" class="metric-icon-img">
+                            <span class="metric-label">Temperatura</span>
+                        </div>
+                        <div class="metric-value"><span id="temperatura">0</span> °C</div>
+                    </div>
+                    <div class="status-row"><span class="status-dot"></span>Sensor DHT11</div>
+                </div>
+
+                <div class="card metric-card">
+                    <div>
+                        <div class="metric-top">
+                            <img src="{{ url_for('static', filename='img/sensores/humedad.png') }}"
+                                 alt="Humedad" class="metric-icon-img">
+                            <span class="metric-label">Humedad</span>
+                        </div>
+                        <div class="metric-value"><span id="humedad">0</span> %</div>
+                    </div>
+                    <div class="status-row"><span class="status-dot"></span>Sensor DHT11</div>
+                </div>
+
+                <div class="card metric-card">
+                    <div>
+                        <div class="metric-top">
+                            <img src="{{ url_for('static', filename='img/sensores/humo.png') }}"
+                                 alt="Gas o humo" class="metric-icon-img">
+                            <span class="metric-label">Gas o humo</span>
+                        </div>
+                        <div id="gas" class="metric-value">0</div>
+                    </div>
+                    <div class="status-row"><span class="status-dot"></span>Sensor MQ-2</div>
+                </div>
+
+                <div class="card metric-card">
+                    <div>
+                        <div class="metric-top">
+                            <img src="{{ url_for('static', filename='img/sensores/distancia.png') }}"
+                                 alt="Distancia" class="metric-icon-img">
+                            <span class="metric-label">Distancia</span>
+                        </div>
+                        <div class="metric-value"><span id="distancia">0</span> cm</div>
+                    </div>
+                    <div class="status-row"><span class="status-dot"></span>Sensor HC-SR04</div>
+                </div>
+
+                <div class="card metric-card">
+                    <div>
+                        <div class="metric-top">
+                            <img src="{{ url_for('static', filename='img/sensores/luz.png') }}"
+                                 alt="Luz" class="metric-icon-img">
+                            <span class="metric-label">Nivel de luz</span>
+                        </div>
+                        <div id="luz" class="metric-value">0</div>
+                    </div>
+                    <div class="status-row"><span class="status-dot"></span>Sensor LDR</div>
+                </div>
+            </div>
+
+            <div class="principal-section-title">Actuadores:</div>
+
+            <div class="principal-actuator-grid">
+                <div class="card principal-actuator-card">
+                    <div class="actuator-title">Puerta</div>
+                    <div id="puerta" class="actuator-state">---</div>
+                </div>
+
+                <div class="card principal-actuator-card">
+                    <div class="actuator-title">Iluminación</div>
+                    <div id="luces" class="actuator-state">---</div>
+                </div>
+
+                <div class="card principal-actuator-card">
+                    <div class="actuator-title">Ventilador</div>
+                    <div id="ventilador" class="actuator-state">---</div>
+                </div>
+
+                <div class="card principal-actuator-card">
+                    <div class="actuator-title">Alarma</div>
+                    <div id="alarma" class="actuator-state">---</div>
+                </div>
+            </div>
+
+            <div class="principal-section-title">Resultados ARM64</div>
+
+            <div class="principal-arm-grid">
+                <div class="card arm-card">
+                    <div class="arm-label">MIN</div>
+                    <div id="min" class="arm-value">0</div>
+                </div>
+
+                <div class="card arm-card">
+                    <div class="arm-label">MAX</div>
+                    <div id="max" class="arm-value">0</div>
+                </div>
+
+                <div class="card arm-card">
+                    <div class="arm-label">PROMEDIO</div>
+                    <div id="avg" class="arm-value">0</div>
+                </div>
+
+                <div class="card arm-card">
+                    <div class="arm-label">CONTADOR</div>
+                    <div id="count" class="arm-value">0</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             GRÁFICAS
+        ====================================================== -->
+        <section id="view-graficas" class="view">
+            <div class="page-heading">
+                <h1>Gráficas de sensores</h1>
+                <p>Últimos registros disponibles desde MongoDB y valores MQTT en tiempo real.</p>
+            </div>
+
+            <div class="charts-grid">
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Temperatura</div>
+                        <div class="chart-unit">°C</div>
+                    </div>
+                    <div class="chart-wrap"><canvas id="graficaTemperatura"></canvas></div>
+                </div>
+
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Humedad</div>
+                        <div class="chart-unit">%</div>
+                    </div>
+                    <div class="chart-wrap"><canvas id="graficaHumedad"></canvas></div>
+                </div>
+
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Gas o humo</div>
+                        <div class="chart-unit">Nivel</div>
+                    </div>
+                    <div class="chart-wrap"><canvas id="graficaGas"></canvas></div>
+                </div>
+
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Distancia</div>
+                        <div class="chart-unit">cm</div>
+                    </div>
+                    <div class="chart-wrap"><canvas id="graficaDistancia"></canvas></div>
+                </div>
+
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Nivel de luz</div>
+                        <div class="chart-unit">Lectura</div>
+                    </div>
+                    <div class="chart-wrap"><canvas id="graficaLuz"></canvas></div>
+                </div>
+
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Promedio de temperatura según ARM64</div>
+                        <div class="chart-unit">°C</div>
+                    </div>
+                    <div class="chart-wrap"><canvas id="graficaArm64"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             CONTROL REMOTO
+        ====================================================== -->
+        <section id="view-control" class="view">
+            <div class="controls-layout">
+                <div class="card controls-panel">
+
+                    <div class="control-row">
+                        <div class="control-name">
+                            <img src="{{ url_for('static', filename='img/control/puerta.png') }}"
+                                 alt="Puerta" class="metric-icon-img">
+                            Puerta
+                        </div>
+
+                        <div class="control-buttons">
+                            <button id="btnPuertaAbrir" class="action-btn"
+                                    onclick="enviarComando('puerta', 'ABRIR')">Abrir</button>
+                            <button id="btnPuertaCerrar" class="action-btn"
+                                    onclick="enviarComando('puerta', 'CERRAR')">Cerrar</button>
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-name">
+                            <img src="{{ url_for('static', filename='img/control/luces.png') }}"
+                                 alt="Luces" class="metric-icon-img">
+                            Luces
+                        </div>
+
+                        <div class="control-buttons">
+                            <button id="btnLucesEncender" class="action-btn"
+                                    onclick="enviarComando('luces', 'ENCENDER')">Encender</button>
+                            <button id="btnLucesApagar" class="action-btn"
+                                    onclick="enviarComando('luces', 'APAGAR')">Apagar</button>
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-name">
+                            <img src="{{ url_for('static', filename='img/control/modo.png') }}"
+                                 alt="Modo de las luces" class="metric-icon-img">
+                            Modo de las luces
+                        </div>
+
+                        <div class="control-buttons">
+                            <button id="btnModoAutomatico" class="action-btn"
+                                    onclick="enviarComando('luces', 'AUTOMATICO')">Automático</button>
+                            <button id="btnModoManual" class="action-btn"
+                                    onclick="enviarComando('luces', 'MANUAL')">Manual</button>
+                        </div>
+                    </div>
+
+                    <div class="zone-status-row">
+                        <div class="zone-status-label">Estado de zonas</div>
+
+                        <div class="zone-status-list">
+                            <div id="zona1" class="zone-status-item">Cuarto 1: ---</div>
+                            <div id="zona2" class="zone-status-item">Cuarto 2: ---</div>
+                            <div id="zona3" class="zone-status-item">Cuarto 3: ---</div>
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-name">
+                            <img src="{{ url_for('static', filename='img/control/ventilador.png') }}"
+                                 alt="Ventilador" class="metric-icon-img">
+                            Ventilador
+                        </div>
+
+                        <div class="control-buttons">
+                            <button id="btnVentiladorEncender" class="action-btn"
+                                    onclick="enviarComando('ventilador', 'ENCENDER')">Encender</button>
+                            <button id="btnVentiladorApagar" class="action-btn"
+                                    onclick="enviarComando('ventilador', 'APAGAR')">Apagar</button>
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-name">
+                            <img src="{{ url_for('static', filename='img/control/alarma.png') }}"
+                                 alt="Alarma" class="metric-icon-img">
+                            Alarma
+                        </div>
+
+                        <div class="control-buttons">
+                            <button id="btnAlarmaActiva" class="action-btn" disabled
+                                    title="La alarma se activa mediante la lógica del sistema.">
+                                Activa
+                            </button>
+
+                            <button id="btnAlarmaSilenciar" class="action-btn"
+                                    onclick="enviarComando('alarma', 'SILENCIAR')">
+                                Silenciar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="reset-button" onclick="enviarComando('sistema', 'RESTABLECER')">
+                    ⚠ Restablecer el estado de emergencia
+                </button>
+
+                <div id="mensajeComando" class="command-message"></div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             HISTORIAL
+        ====================================================== -->
+        <section id="view-historial" class="view">
+            <div class="page-heading">
+                <h1>Historial del sistema</h1>
+                <p>Eventos, comandos remotos y resultados ARM64 almacenados en MongoDB.</p>
+
+                <button class="action-btn" onclick="cargarHistorial()">↻ Actualizar</button>
+            </div>
+
+            <div class="history-grid">
+                <div class="card history-card">
+                    <div class="history-header">Últimos eventos</div>
+                    <div id="listaEventos" class="history-list">
+                        <div class="empty-state">Sin eventos registrados.</div>
+                    </div>
+                </div>
+
+                <div class="card history-card">
+                    <div class="history-header">Últimos comandos remotos</div>
+                    <div id="listaComandos" class="history-list">
+                        <div class="empty-state">Sin comandos registrados.</div>
+                    </div>
+                </div>
+
+                <div class="card history-card">
+                    <div class="history-header">Últimos resultados ARM64</div>
+                    <div id="listaArm64" class="history-list">
+                        <div class="empty-state">Sin resultados registrados.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    /* =========================================================
+       FUNCIONES BÁSICAS
+    ========================================================= */
+
+    function elemento(id) {
+        return document.getElementById(id);
+    }
+
+    function ponerTexto(id, valor) {
+        const objeto = elemento(id);
+
+        if (objeto) {
+            objeto.textContent = valor;
+        }
+    }
+
+    function normalizar(valor) {
+        return String(valor || "").trim().toUpperCase();
+    }
+
+    /* =========================================================
+       CAMBIO DE VISTA
+    ========================================================= */
+
+    function cambiarVista(nombre) {
+        document.querySelectorAll(".view").forEach(vista => {
+            vista.classList.remove("active");
+        });
+
+        document.querySelectorAll(".nav-button").forEach(boton => {
+            boton.classList.remove("active");
+        });
+
+        const vista = elemento("view-" + nombre);
+        const boton = document.querySelector(`[data-view="${nombre}"]`);
+
+        if (vista) {
+            vista.classList.add("active");
+        }
+
+        if (boton) {
+            boton.classList.add("active");
+        }
+
+        if (nombre === "graficas") {
+            setTimeout(() => {
+                [
+                    graficaTemperatura,
+                    graficaHumedad,
+                    graficaGas,
+                    graficaDistancia,
+                    graficaLuz,
+                    graficaArm64
+                ].forEach(grafica => grafica.resize());
+            }, 80);
+        }
+
+        if (nombre === "historial") {
+            cargarHistorial();
+        }
+    }
+
+    /* =========================================================
+       RELOJ
+    ========================================================= */
+
+    function actualizarReloj() {
+        const ahora = new Date();
+
+        ponerTexto(
+            "fechaActual",
+            ahora.toLocaleDateString("es-GT", {
+                weekday: "short",
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+            })
+        );
+
+        ponerTexto("horaActual", ahora.toLocaleTimeString("es-GT"));
+    }
+
+    /* =========================================================
+       GRÁFICAS
+    ========================================================= */
+
+    function crearGrafica(id, nombre) {
+        return new Chart(elemento(id), {
+            type: "line",
+
+            data: {
+                labels: [],
+                datasets: [{
+                    label: nombre,
+                    data: [],
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    tension: 0.3,
+                    fill: false
+                }]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                interaction: {
+                    intersect: false,
+                    mode: "index"
+                },
+
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+
+                scales: {
+                    x: {
+                        grid: { color: "#edf1f5" },
+                        ticks: {
+                            color: "#718096",
+                            maxTicksLimit: 6
+                        }
+                    },
+
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: "#edf1f5" },
+                        ticks: { color: "#718096" }
+                    }
+                }
+            }
+        });
+    }
+
+    const graficaTemperatura = crearGrafica("graficaTemperatura", "Temperatura");
+    const graficaHumedad = crearGrafica("graficaHumedad", "Humedad");
+    const graficaGas = crearGrafica("graficaGas", "Gas");
+    const graficaDistancia = crearGrafica("graficaDistancia", "Distancia");
+    const graficaLuz = crearGrafica("graficaLuz", "Nivel de luz");
+    const graficaArm64 = crearGrafica("graficaArm64", "Promedio ARM64");
+
+    function agregarDato(grafica, etiqueta, valor) {
+        const numero = Number(valor);
+
+        if (valor === null || valor === undefined || Number.isNaN(numero)) {
+            return;
+        }
+
+        grafica.data.labels.push(etiqueta);
+        grafica.data.datasets[0].data.push(numero);
+
+        if (grafica.data.labels.length > 20) {
+            grafica.data.labels.shift();
+            grafica.data.datasets[0].data.shift();
+        }
+
+        grafica.update("none");
+    }
+
+    function cargarSerie(grafica, registros) {
+        grafica.data.labels = [];
+        grafica.data.datasets[0].data = [];
+
+        (registros || []).forEach(registro => {
+            const fecha = new Date(registro.timestamp);
+
+            grafica.data.labels.push(
+                fecha.toLocaleTimeString("es-GT", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                })
+            );
+
+            grafica.data.datasets[0].data.push(Number(registro.value));
+        });
+
+        grafica.update("none");
+    }
+
+    /* =========================================================
+       ESTADOS DE BOTONES Y ZONAS
+    ========================================================= */
+
+    function marcarBotonActivo(idActivo, idsGrupo) {
+        idsGrupo.forEach(id => {
+            const boton = elemento(id);
+
+            if (boton) {
+                boton.classList.remove("activo");
+            }
+        });
+
+        if (idActivo && elemento(idActivo)) {
+            elemento(idActivo).classList.add("activo");
+        }
+    }
+
+    function actualizarEstadoZona(id, nombre, estado) {
+        const zona = elemento(id);
+
+        if (!zona) {
+            return;
+        }
+
+        const valor = normalizar(estado) || "---";
+
+        zona.textContent = `${nombre}: ${valor}`;
+        zona.classList.remove("encendida", "apagada");
+
+        if (valor === "ENCENDIDA" || valor === "ENCENDIDO") {
+            zona.classList.add("encendida");
+        }
+
+        if (valor === "APAGADA" || valor === "APAGADO") {
+            zona.classList.add("apagada");
+        }
+    }
+
+    function actualizarBotonesActivos(datos) {
+        const puerta = normalizar(datos.puerta);
+        const modo = normalizar(datos.modo_iluminacion);
+        const ventilador = normalizar(datos.ventilador);
+        const alarma = normalizar(datos.alarma);
+
+        const zona1 = normalizar(datos.zona1);
+        const zona2 = normalizar(datos.zona2);
+        const zona3 = normalizar(datos.zona3);
+
+        // Puerta
+        if (puerta === "ABIERTA" || puerta === "ABIERTO") {
+            marcarBotonActivo("btnPuertaAbrir", ["btnPuertaAbrir", "btnPuertaCerrar"]);
+        } else if (puerta === "CERRADA" || puerta === "CERRADO") {
+            marcarBotonActivo("btnPuertaCerrar", ["btnPuertaAbrir", "btnPuertaCerrar"]);
+        } else {
+            marcarBotonActivo(null, ["btnPuertaAbrir", "btnPuertaCerrar"]);
+        }
+
+        // Luces
+        const todasEncendidas =
+            zona1 === "ENCENDIDA" &&
+            zona2 === "ENCENDIDA" &&
+            zona3 === "ENCENDIDA";
+
+        const todasApagadas =
+            zona1 === "APAGADA" &&
+            zona2 === "APAGADA" &&
+            zona3 === "APAGADA";
+
+        if (todasEncendidas) {
+            marcarBotonActivo("btnLucesEncender", ["btnLucesEncender", "btnLucesApagar"]);
+        } else if (todasApagadas) {
+            marcarBotonActivo("btnLucesApagar", ["btnLucesEncender", "btnLucesApagar"]);
+        } else {
+            marcarBotonActivo(null, ["btnLucesEncender", "btnLucesApagar"]);
+        }
+
+        // Modo de iluminación
+        if (modo === "AUTOMATICO" || modo === "AUTOMÁTICO") {
+            marcarBotonActivo("btnModoAutomatico", ["btnModoAutomatico", "btnModoManual"]);
+        } else if (modo === "MANUAL") {
+            marcarBotonActivo("btnModoManual", ["btnModoAutomatico", "btnModoManual"]);
+        } else {
+            marcarBotonActivo(null, ["btnModoAutomatico", "btnModoManual"]);
+        }
+
+        // Ventilador
+        if (ventilador === "ENCENDIDO" || ventilador === "ENCENDIDA") {
+            marcarBotonActivo(
+                "btnVentiladorEncender",
+                ["btnVentiladorEncender", "btnVentiladorApagar"]
+            );
+        } else if (ventilador === "APAGADO" || ventilador === "APAGADA") {
+            marcarBotonActivo(
+                "btnVentiladorApagar",
+                ["btnVentiladorEncender", "btnVentiladorApagar"]
+            );
+        } else {
+            marcarBotonActivo(
+                null,
+                ["btnVentiladorEncender", "btnVentiladorApagar"]
+            );
+        }
+
+        // Alarma
+        if (alarma === "SILENCIADA" || alarma === "SILENCIADO") {
+            marcarBotonActivo(
+                "btnAlarmaSilenciar",
+                ["btnAlarmaActiva", "btnAlarmaSilenciar"]
+            );
+        } else if (
+            alarma === "ACTIVA" ||
+            alarma === "ACTIVO" ||
+            alarma === "ENCENDIDA" ||
+            alarma === "ENCENDIDO"
+        ) {
+            marcarBotonActivo(
+                "btnAlarmaActiva",
+                ["btnAlarmaActiva", "btnAlarmaSilenciar"]
+            );
+        } else {
+            marcarBotonActivo(
+                null,
+                ["btnAlarmaActiva", "btnAlarmaSilenciar"]
+            );
+        }
+    }
+
+    /* =========================================================
+       DATOS ACTUALES
+    ========================================================= */
+
+    let ultimoCiclo = -1;
+    let ultimoArm64 = "";
+
+    function textoEstadoGlobal(estado) {
+        if (estado === "NORMAL") {
+            return {
+                titulo: "Operando normalmente",
+                mensaje: "El sistema no reporta una condición crítica.",
+                color: "var(--green)"
+            };
+        }
+
+        if (estado === "ADVERTENCIA") {
+            return {
+                titulo: "Estado de advertencia",
+                mensaje: "Existe una condición que requiere atención.",
+                color: "var(--yellow)"
+            };
+        }
+
+        if (estado === "EMERGENCIA") {
+            return {
+                titulo: "Estado de emergencia",
+                mensaje: "El sistema reporta una condición crítica.",
+                color: "var(--red)"
+            };
+        }
+
+        return {
+            titulo: estado || "---",
+            mensaje: "Esperando información del sistema...",
+            color: "var(--text)"
+        };
+    }
+
+    async function actualizarDatos() {
+        try {
+            const respuesta = await fetch("/api/datos");
+            const datos = await respuesta.json();
+
+            // Sensores
+            ponerTexto("temperatura", datos.temperatura);
+            ponerTexto("humedad", datos.humedad);
+            ponerTexto("gas", datos.gas);
+            ponerTexto("distancia", datos.distancia);
+            ponerTexto("luz", datos.luz);
+
+            // Actuadores
+            ponerTexto("puerta", datos.puerta);
+            ponerTexto("luces", datos.luces);
+            ponerTexto("ventilador", datos.ventilador);
+            ponerTexto("alarma", datos.alarma);
+
+            // Zonas
+            actualizarEstadoZona("zona1", "Cuarto 1", datos.zona1);
+            actualizarEstadoZona("zona2", "Cuarto 2", datos.zona2);
+            actualizarEstadoZona("zona3", "Cuarto 3", datos.zona3);
+
+            actualizarBotonesActivos(datos);
+
+            // Estado global
+            const infoEstado = textoEstadoGlobal(datos.estado);
+
+            ponerTexto("estadoGlobalPrincipal", infoEstado.titulo);
+            ponerTexto("mensajeEstado", infoEstado.mensaje);
+            elemento("estadoGlobalPrincipal").style.color = infoEstado.color;
+
+            // ARM64
+            ponerTexto("min", datos.arm64.min);
+            ponerTexto("max", datos.arm64.max);
+            ponerTexto("avg", datos.arm64.avg);
+            ponerTexto("count", datos.arm64.count);
+
+            // Agregar una lectura nueva a las gráficas
+            if (datos.ciclo !== ultimoCiclo) {
+                ultimoCiclo = datos.ciclo;
+
+                const hora = new Date().toLocaleTimeString("es-GT", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit"
+                });
+
+                agregarDato(graficaTemperatura, hora, datos.temperatura);
+                agregarDato(graficaHumedad, hora, datos.humedad);
+                agregarDato(graficaGas, hora, datos.gas);
+                agregarDato(graficaDistancia, hora, datos.distancia);
+                agregarDato(graficaLuz, hora, datos.luz);
+            }
+
+            // Agregar un nuevo resultado ARM64 si cambió
+            const resultadoArm64 = JSON.stringify(datos.arm64);
+
+            if (resultadoArm64 !== ultimoArm64) {
+                ultimoArm64 = resultadoArm64;
+
+                if (Number(datos.arm64.count) > 0) {
+                    const hora = new Date().toLocaleTimeString("es-GT", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit"
+                    });
+
+                    agregarDato(graficaArm64, hora, datos.arm64.avg);
+                }
+            }
+
+        } catch (error) {
+            console.error("Error cargando datos:", error);
+        }
+    }
+
+    /* =========================================================
+       CONTROL REMOTO
+    ========================================================= */
+
+    function mostrarToast(mensaje) {
+        const toast = elemento("toast");
+
+        toast.textContent = mensaje;
+        toast.classList.add("show");
+
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 2500);
+    }
+
+    async function enviarComando(dispositivo, accion) {
+        const mensaje = elemento("mensajeComando");
+        mensaje.textContent = "Enviando comando...";
+
+        try {
+            const respuesta = await fetch("/api/control", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    dispositivo: dispositivo,
+                    accion: accion
+                })
+            });
+
+            const resultado = await respuesta.json();
+
+            if (resultado.ok) {
+                const texto = `${dispositivo} → ${accion}`;
+
+                mensaje.textContent = "Comando enviado: " + texto;
+                mostrarToast("Comando enviado: " + texto);
+
+                setTimeout(cargarHistorial, 500);
+            } else {
+                mensaje.textContent = "No se pudo enviar el comando.";
+                mostrarToast("No se pudo enviar el comando.");
+            }
+
+        } catch (error) {
+            console.error("Error enviando comando:", error);
+
+            mensaje.textContent = "Error enviando el comando.";
+            mostrarToast("Error enviando el comando.");
+        }
+    }
+
+    /* =========================================================
+       HISTORIAL
+    ========================================================= */
+
+    function formatearFecha(timestamp) {
+        if (!timestamp) {
+            return "";
+        }
+
+        return new Date(timestamp).toLocaleString("es-GT");
+    }
+
+    function limpiarTexto(valor) {
+        if (valor === null || valor === undefined) {
+            return "";
+        }
+
+        return String(valor)
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;");
+    }
+
+    function crearItemHistorial(texto, timestamp) {
+        const item = document.createElement("div");
+        item.className = "history-item";
+
+        item.innerHTML = `
+            <div class="history-main">${limpiarTexto(texto)}</div>
+            <div class="history-sub">${formatearFecha(timestamp)}</div>
+        `;
+
+        return item;
+    }
+
+    function mostrarEventos(eventos) {
+        const contenedor = elemento("listaEventos");
+        contenedor.innerHTML = "";
+
+        if (!eventos || eventos.length === 0) {
+            contenedor.innerHTML =
+                '<div class="empty-state">Sin eventos registrados.</div>';
+            return;
+        }
+
+        eventos.forEach(evento => {
+            const texto = `${evento.tipo} · ${evento.descripcion}`;
+            contenedor.appendChild(crearItemHistorial(texto, evento.timestamp));
+        });
+    }
+
+    function mostrarComandos(comandos) {
+        const contenedor = elemento("listaComandos");
+        contenedor.innerHTML = "";
+
+        if (!comandos || comandos.length === 0) {
+            contenedor.innerHTML =
+                '<div class="empty-state">Sin comandos registrados.</div>';
+            return;
+        }
+
+        comandos.forEach(registro => {
+            let texto = registro.comando;
+
+            try {
+                const comando = JSON.parse(registro.comando);
+                texto = `${comando.dispositivo} → ${comando.accion}`;
+            } catch (error) {
+                // Si no es JSON, se muestra el texto original.
+            }
+
+            contenedor.appendChild(
+                crearItemHistorial(texto, registro.timestamp)
+            );
+        });
+    }
+
+    function mostrarArm64(registros) {
+        const contenedor = elemento("listaArm64");
+        contenedor.innerHTML = "";
+
+        if (!registros || registros.length === 0) {
+            contenedor.innerHTML =
+                '<div class="empty-state">Sin resultados registrados.</div>';
+            return;
+        }
+
+        registros
+            .slice()
+            .reverse()
+            .slice(0, 10)
+            .forEach(registro => {
+                const texto =
+                    `MAX=${registro.max} · ` +
+                    `MIN=${registro.min} · ` +
+                    `AVG=${registro.avg} · ` +
+                    `COUNT=${registro.count}`;
+
+                contenedor.appendChild(
+                    crearItemHistorial(texto, registro.timestamp)
+                );
+            });
+    }
+
+    async function cargarHistorial() {
+        try {
+            const respuesta = await fetch("/api/historial?limite=20");
+            const resultado = await respuesta.json();
+
+            if (!resultado.ok) {
+                console.warn("Historial no disponible:", resultado.error);
+                return;
+            }
+
+            const historial = resultado.historial;
+
+            cargarSerie(graficaTemperatura, historial.temperatura);
+            cargarSerie(graficaHumedad, historial.humedad);
+            cargarSerie(graficaGas, historial.gas);
+            cargarSerie(graficaDistancia, historial.distancia);
+            cargarSerie(graficaLuz, historial.luz);
+
+            // Gráfica del promedio ARM64
+            graficaArm64.data.labels = [];
+            graficaArm64.data.datasets[0].data = [];
+
+            (historial.arm64 || []).forEach(registro => {
+                const fecha = new Date(registro.timestamp);
+
+                graficaArm64.data.labels.push(
+                    fecha.toLocaleTimeString("es-GT", {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    })
+                );
+
+                graficaArm64.data.datasets[0].data.push(
+                    Number(registro.avg)
+                );
+            });
+
+            graficaArm64.update("none");
+
+            mostrarEventos(historial.eventos);
+            mostrarComandos(historial.comandos);
+            mostrarArm64(historial.arm64);
+
+        } catch (error) {
+            console.error("Error cargando historial:", error);
+        }
+    }
+
+    /* =========================================================
+       INICIO
+    ========================================================= */
+
+    actualizarReloj();
+    actualizarDatos();
+    cargarHistorial();
+
+    setInterval(actualizarReloj, 1000);
+    setInterval(actualizarDatos, 1000);
+    setInterval(cargarHistorial, 15000);
+</script>
+</body>
+</html>

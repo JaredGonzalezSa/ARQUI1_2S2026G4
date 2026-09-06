@@ -1,20 +1,19 @@
-# Control de actuadores: servo, ventilador, LEDs, buzzer, botones, y LCD vía serial
-
 import time
 import threading
 import globals as gl
-
 import RPi.GPIO as GPIO
-    
+
+try:
+    from rpi_lcd import LCD
+    LCD_DISPONIBLE = True
+except ImportError:
+    LCD_DISPONIBLE = False
+
 
 class ActuadorManager:
-    def __init__(self, serial_conexion=None):
-        """
-        serial_conexion: objeto serial para comunicarse con Arduino (para LCD)
-        """
+    def __init__(self):
         print("[ACTUADORES] Inicializando...")
         
-        # Pines desde globals
         self.PIN_VENTILADOR = gl.PIN_VENTILADOR
         self.PIN_LED_PUERTA = gl.PIN_LED_PUERTA
         self.PIN_SERVO = gl.PIN_SERVO
@@ -30,10 +29,10 @@ class ActuadorManager:
         self.PIN_BOTON3 = gl.PIN_BOTON3
         self.PIN_BOTON4 = gl.PIN_BOTON4
         
-        # Conexión serial para LCD 
-        self.serial_conexion = serial_conexion
+        self.lcd = None
+        self.lcd_disponible = False
+        self._inicializar_lcd()
         
-        # Estado interno
         self.puerta_abierta = False
         self.luces_encendidas = False
         self.ventilador_encendido = False
@@ -42,24 +41,42 @@ class ActuadorManager:
         self.estado_actual_global = gl.ESTADO_NORMAL
         self.timer_puerta = None
         
-        # Inicializar GPIO y servo
+        # Variables para botones (debounce por software)
+        self.ultimo_boton = {'boton1': 0, 'boton2': 0, 'boton3': 0, 'boton4': 0}
+        self.estado_boton = {'boton1': False, 'boton2': False, 'boton3': False, 'boton4': False}
+        self.DEBOUNCE_MS = 150
+        
         self._inicializar_gpio()
         self._inicializar_servo()
         
-        # Estado inicial: LEDs de estado apagados, alarma apagada, luces apagadas
         self._actualizar_leds_estado(gl.ESTADO_NORMAL)
         self._set_buzzer(False)
         self._set_luces(False)
         
-        # Enviar mensaje inicial al LCD
-        self.actualizar_lcd("Sistema Iniciado", "Esperando...")
+        if self.lcd_disponible:
+            self.actualizar_lcd("Sistema Iniciado", "Esperando...")
         
         print("[ACTUADORES] Listo")
+    
+    def _inicializar_lcd(self):
+        if not LCD_DISPONIBLE:
+            return
+        try:
+            self.lcd = LCD(gl.LCD_I2C_ADDR, 1, gl.LCD_COLS, gl.LCD_ROWS, True)
+            self.lcd.clear()
+            self.lcd.text("Sistema Iniciado", 1)
+            self.lcd.text("Esperando...", 2)
+            self.lcd_disponible = True
+            print(f"[LCD] Inicializado en 0x{gl.LCD_I2C_ADDR:02X}")
+        except Exception as e:
+            print(f"[LCD] No se pudo inicializar: {e}")
+            self.lcd = None
+            self.lcd_disponible = False
     
     def _inicializar_gpio(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
-        # Salidas
+        
         GPIO.setup(self.PIN_VENTILADOR, GPIO.OUT)
         GPIO.setup(self.PIN_LED_PUERTA, GPIO.OUT)
         GPIO.setup(self.PIN_LED_VERDE, GPIO.OUT)
@@ -69,12 +86,12 @@ class ActuadorManager:
         GPIO.setup(self.PIN_LED_ZONA2, GPIO.OUT)
         GPIO.setup(self.PIN_LED_ZONA3, GPIO.OUT)
         GPIO.setup(self.PIN_BUZZER, GPIO.OUT)
-        # Botones con pull-up (activos en bajo)
+        
         GPIO.setup(self.PIN_BOTON1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.PIN_BOTON2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.PIN_BOTON3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.PIN_BOTON4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        # Apagar todo al inicio
+        
         GPIO.output(self.PIN_VENTILADOR, False)
         GPIO.output(self.PIN_LED_PUERTA, False)
         GPIO.output(self.PIN_LED_VERDE, False)
@@ -89,30 +106,24 @@ class ActuadorManager:
         GPIO.setup(self.PIN_SERVO, GPIO.OUT)
         self.servo_pwm = GPIO.PWM(self.PIN_SERVO, 50)
         self.servo_pwm.start(0)
-        self.servo_pwm.ChangeDutyCycle(2.5)  # cerrado
+        self.servo_pwm.ChangeDutyCycle(2.5)
         time.sleep(0.5)
         self.servo_pwm.ChangeDutyCycle(0)
     
-    # ---------- COMANDOS PARA ARDUINO (LCD) ----------
     def actualizar_lcd(self, linea1, linea2):
-        """
-        Envía texto al LCD a través de Arduino por serial.
-        Formato: "LCD:linea1,linea2"
-        """
-        if not self.serial_conexion or not self.serial_conexion.is_open:
+        if not self.lcd_disponible or self.lcd is None:
             return
         try:
-            # Recortar a 16 caracteres
             linea1 = linea1[:16].ljust(16)
             linea2 = linea2[:16].ljust(16)
-            mensaje = f"LCD:{linea1},{linea2}\n"
-            self.serial_conexion.write(mensaje.encode())
-        except Exception as e:
-            print(f"[LCD] Error enviando: {e}")
+            self.lcd.clear()
+            self.lcd.text(linea1, 1)
+            self.lcd.text(linea2, 2)
+        except Exception:
+            self.lcd_disponible = False
+            self.lcd = None
     
-    # ---------- LEDS DE ILUMINACIÓN (3 zonas) ----------
     def _set_luces(self, estado):
-        """Enciende o apaga los 3 LEDs de iluminación simultáneamente"""
         GPIO.output(self.PIN_LED_ZONA1, estado)
         GPIO.output(self.PIN_LED_ZONA2, estado)
         GPIO.output(self.PIN_LED_ZONA3, estado)
@@ -140,18 +151,17 @@ class ActuadorManager:
         self.modo_luz_auto = not self.modo_luz_auto
         return self.modo_luz_auto
     
-    # ---------- LEDS DE ESTADO (verde, amarillo, rojo) ----------
     def _actualizar_leds_estado(self, estado):
-        verde = (estado == gl.ESTADO_NORMAL)
-        amarillo = (estado == gl.ESTADO_ADVERTENCIA)
-        rojo = (estado == gl.ESTADO_EMERGENCIA)
-        GPIO.output(self.PIN_LED_VERDE, verde)
-        GPIO.output(self.PIN_LED_AMARILLO, amarillo)
-        GPIO.output(self.PIN_LED_ROJO, rojo)
+        GPIO.output(self.PIN_LED_VERDE, estado == gl.ESTADO_NORMAL)
+        GPIO.output(self.PIN_LED_AMARILLO, estado == gl.ESTADO_ADVERTENCIA)
+        GPIO.output(self.PIN_LED_ROJO, estado == gl.ESTADO_EMERGENCIA)
     
-    # ---------- BUZZER ----------
     def _set_buzzer(self, estado):
         GPIO.output(self.PIN_BUZZER, estado)
+        if estado:
+            print("[BUZZER] Activado")
+        else:
+            print("[BUZZER] Desactivado")
     
     def activar_alarma(self):
         self._set_buzzer(True)
@@ -169,7 +179,6 @@ class ActuadorManager:
         else:
             return self.activar_alarma()
     
-    # ---------- VENTILADOR ----------
     def encender_ventilador(self):
         GPIO.output(self.PIN_VENTILADOR, True)
         self.ventilador_encendido = True
@@ -186,7 +195,6 @@ class ActuadorManager:
         else:
             return self.encender_ventilador()
     
-    # ---------- PUERTA (servo) ----------
     def abrir_puerta(self):
         self.servo_pwm.ChangeDutyCycle(7.5)
         time.sleep(0.5)
@@ -194,6 +202,7 @@ class ActuadorManager:
         GPIO.output(self.PIN_LED_PUERTA, True)
         self.puerta_abierta = True
         self._cancelar_timer_puerta()
+        print("[PUERTA] Abierta")
         return True
     
     def cerrar_puerta(self):
@@ -203,6 +212,7 @@ class ActuadorManager:
         GPIO.output(self.PIN_LED_PUERTA, False)
         self.puerta_abierta = False
         self._cancelar_timer_puerta()
+        print("[PUERTA] Cerrada")
         return True
     
     def _cancelar_timer_puerta(self):
@@ -227,34 +237,64 @@ class ActuadorManager:
         else:
             return self.abrir_puerta()
     
-    # ---------- ESTADO GLOBAL ----------
     def actualizar_estado(self, estado):
-        """Actualiza LEDs de estado y alarma según el estado global"""
         self.estado_actual_global = estado
         self._actualizar_leds_estado(estado)
         if estado == gl.ESTADO_EMERGENCIA:
             self.activar_alarma()
-        # Si sale de emergencia, no desactivamos alarma automáticamente
     
-    # ---------- LECTURA DE BOTONES ----------
     def leer_botones(self):
-        """
-        Retorna diccionario con estado de cada botón (True = presionado).
-        Los botones están con pull-up, así que 0 = presionado.
-        """
-        return {
-            'boton1': GPIO.input(self.PIN_BOTON1) == 0,
-            'boton2': GPIO.input(self.PIN_BOTON2) == 0,
-            'boton3': GPIO.input(self.PIN_BOTON3) == 0,
-            'boton4': GPIO.input(self.PIN_BOTON4) == 0
-        }
+        """Lee los botones con debounce por software"""
+        t_actual = time.time() * 1000
+        resultado = {}
+        
+        # Botón 1
+        if GPIO.input(self.PIN_BOTON1) == 0:
+            if t_actual - self.ultimo_boton['boton1'] > self.DEBOUNCE_MS:
+                self.ultimo_boton['boton1'] = t_actual
+                self.estado_boton['boton1'] = True
+                resultado['boton1'] = True
+                print("[BOTON 1] Detectado")
+        else:
+            self.estado_boton['boton1'] = False
+        
+        # Botón 2
+        if GPIO.input(self.PIN_BOTON2) == 0:
+            if t_actual - self.ultimo_boton['boton2'] > self.DEBOUNCE_MS:
+                self.ultimo_boton['boton2'] = t_actual
+                self.estado_boton['boton2'] = True
+                resultado['boton2'] = True
+                print("[BOTON 2] Detectado")
+        else:
+            self.estado_boton['boton2'] = False
+        
+        # Botón 3
+        if GPIO.input(self.PIN_BOTON3) == 0:
+            if t_actual - self.ultimo_boton['boton3'] > self.DEBOUNCE_MS:
+                self.ultimo_boton['boton3'] = t_actual
+                self.estado_boton['boton3'] = True
+                resultado['boton3'] = True
+                print("[BOTON 3] Detectado")
+        else:
+            self.estado_boton['boton3'] = False
+        
+        # Botón 4
+        if GPIO.input(self.PIN_BOTON4) == 0:
+            if t_actual - self.ultimo_boton['boton4'] > self.DEBOUNCE_MS:
+                self.ultimo_boton['boton4'] = t_actual
+                self.estado_boton['boton4'] = True
+                resultado['boton4'] = True
+                print("[BOTON 4] Detectado")
+        else:
+            self.estado_boton['boton4'] = False
+        
+        return resultado
     
-    # ---------- ESTADO PARA DASHBOARD ----------
     def obtener_estados(self):
         return {
             'puerta': 'ABIERTA' if self.puerta_abierta else 'CERRADA',
             'luces': 'ENCENDIDAS' if self.luces_encendidas else 'APAGADAS',
-            'modo_luz': 'AUTOMÁTICO' if self.modo_luz_auto else 'MANUAL',
+            'modo_luz': 'AUTOMATICO' if self.modo_luz_auto else 'MANUAL',
             'ventilador': 'ENCENDIDO' if self.ventilador_encendido else 'APAGADO',
             'alarma': 'ACTIVADA' if self.alarma_activada else 'DESACTIVADA'
         }
@@ -263,6 +303,9 @@ class ActuadorManager:
         try:
             if hasattr(self, 'servo_pwm'):
                 self.servo_pwm.stop()
+            if self.lcd_disponible and self.lcd:
+                self.lcd.clear()
+                self.lcd.backlight(False)
         except:
             pass
         GPIO.cleanup()

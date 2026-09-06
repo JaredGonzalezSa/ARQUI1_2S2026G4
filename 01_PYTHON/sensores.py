@@ -1,13 +1,14 @@
 import time
-import serial
 import threading
+import serial
 import globals as gl
-
 import RPi.GPIO as GPIO
 import Adafruit_DHT
+from Adafruit_DHT import Raspberry_Pi, DHT11
+
 
 class SensorManager:
-    def __init__(self, puerto_serial=None):
+    def __init__(self, puerto_serial=gl.PUERTO_SERIAL):
         print("[SENSORES] Inicializando...")
         
         self.PIN_DHT = gl.PIN_DHT
@@ -35,8 +36,7 @@ class SensorManager:
         self.ultima_lectura = {k: 0 for k in self.ultimos_valores}
         
         self._inicializar_gpio()
-        if puerto_serial:
-            self._conectar_serial()
+        self._conectar_serial()
         
         self.serial_thread_activo = True
         self.hilo_serial = threading.Thread(target=self._leer_serial_continuo)
@@ -97,52 +97,58 @@ class SensorManager:
     def leer_temperatura(self):
         if not self._debe_leer('temperatura'):
             return self.ultimos_valores['temperatura']
+        
+        self.ultima_lectura['temperatura'] = time.time()
+        
         try:
-            h, t = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, self.PIN_DHT)
+            h, t = Raspberry_Pi.read(DHT11, self.PIN_DHT)
             if t is not None:
                 val = int(round(t))
                 self.ultimos_valores['temperatura'] = val
-                self.ultima_lectura['temperatura'] = time.time()
                 return val
-        except:
-            pass
+        except Exception as e:
+            print(f"[ERROR TEMP]: {e}")
+            
         return self.ultimos_valores['temperatura']
     
     def leer_humedad(self):
         if not self._debe_leer('humedad'):
             return self.ultimos_valores['humedad']
+        
+        self.ultima_lectura['humedad'] = time.time()
+        
         try:
-            h, t = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, self.PIN_DHT)
+            h, t = Raspberry_Pi.read(DHT11, self.PIN_DHT)
             if h is not None:
                 val = int(round(h))
                 self.ultimos_valores['humedad'] = val
-                self.ultima_lectura['humedad'] = time.time()
                 return val
-        except:
-            pass
+        except Exception as e:
+            print(f"[ERROR HUM]: {e}")
+            
         return self.ultimos_valores['humedad']
     
     def leer_gas(self):
-        if not self._debe_leer('gas'):
-            return self.ultimos_valores['gas']
-        self.ultima_lectura['gas'] = time.time()
+        # Valor actualizado por el hilo serial
         return self.ultimos_valores['gas']
     
     def leer_luz(self):
-        if not self._debe_leer('luz'):
-            return self.ultimos_valores['luz']
-        self.ultima_lectura['luz'] = time.time()
+        # Valor actualizado por el hilo serial
         return self.ultimos_valores['luz']
     
     def leer_distancia(self):
         if not self._debe_leer('distancia'):
             return self.ultimos_valores['distancia']
+        
+        self.ultima_lectura['distancia'] = time.time()
+        
         try:
             GPIO.output(self.PIN_TRIG, False)
             time.sleep(0.1)
             GPIO.output(self.PIN_TRIG, True)
             time.sleep(0.00001)
             GPIO.output(self.PIN_TRIG, False)
+            
             pulse_start = time.time()
             pulse_end = time.time()
             timeout = 0.1
@@ -159,7 +165,6 @@ class SensorManager:
             dist = int(round(duration * 17150))
             if 2 <= dist <= 400:
                 self.ultimos_valores['distancia'] = dist
-                self.ultima_lectura['distancia'] = time.time()
                 return dist
         except:
             pass

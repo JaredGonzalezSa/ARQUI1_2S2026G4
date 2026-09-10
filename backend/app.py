@@ -8,6 +8,11 @@ from datetime import timezone
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+from mongo import MongoDBManager
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+from iot import globals as gl
 
 # -------------------------------------------------
 # CONFIGURACIÓN
@@ -268,6 +273,34 @@ def al_conectar(
             reason_code
         )
 
+def normalizar_modo(valor):
+    """Normaliza el modo de iluminación a AUTOMATICO o MANUAL."""
+    v = str(valor).strip().upper()
+    if v in ("AUTO", "AUTOMATICO", "AUTOMÁTICO", "AUTO_ON", "AUTO_OFF"):
+        return "AUTOMATICO"
+    if v in ("MANUAL", "MAN"):
+        return "MANUAL"
+    return v
+
+
+def normalizar_zona(valor):
+    """Normaliza el estado de una zona a ENCENDIDA o APAGADA."""
+    v = str(valor).strip().upper()
+    if v in ("ON", "ENCENDIDA", "ENCENDIDO", "TRUE", "1"):
+        return "ENCENDIDA"
+    if v in ("OFF", "APAGADA", "APAGADO", "FALSE", "0"):
+        return "APAGADA"
+    return v
+
+
+def derivar_estado_global_luces():
+    """Deriva el estado global: ENCENDIDAS solo si las 3 zonas están encendidas.
+    En cualquier otro caso → APAGADAS (nunca PARCIAL)."""
+    zonas = [datos["zona1"], datos["zona2"], datos["zona3"]]
+    if all(z == "ENCENDIDA" for z in zonas):
+        return "ENCENDIDAS"
+    return "APAGADAS"
+
 
 def al_recibir(
     client,
@@ -278,7 +311,7 @@ def al_recibir(
     topic = mensaje.topic
     contenido = mensaje.payload.decode("utf-8")
 
-    print(topic, "->", contenido)
+    print(f"[MQTT RECIBIDO] {topic} -> {contenido}") 
 
     # ------------------------------------------
     # SENSORES
@@ -312,37 +345,47 @@ def al_recibir(
             datos["puerta"] = contenido
 
     elif topic == f"{BASE}/actuadores/luces":
-        # Soporta tanto JSON como texto plano
         try:
             estado_luces = json.loads(contenido)
-            datos["modo_iluminacion"] = estado_luces.get("modo", datos["modo_iluminacion"])
-            datos["zona1"] = estado_luces.get("zona1", datos["zona1"])
-            datos["zona2"] = estado_luces.get("zona2", datos["zona2"])
-            datos["zona3"] = estado_luces.get("zona3", datos["zona3"])
-            datos["luces"] = f"Z1:{datos['zona1']} Z2:{datos['zona2']} Z3:{datos['zona3']}"
-        except json.JSONDecodeError:
-            # Texto plano: "ON", "OFF", "AUTO_ON", "AUTO_OFF", "MODO_AUTO", "MODO_MANUAL"
-            if contenido in ("ON", "AUTO_ON"):
-                datos["luces"] = "ENCENDIDAS"
-                datos["zona1"] = "ENCENDIDA"
-                datos["zona2"] = "ENCENDIDA"
-                datos["zona3"] = "ENCENDIDA"
-                # Si llega AUTO_ON, el modo es automático
-                if contenido == "AUTO_ON":
+            if "modo" in estado_luces:
+                modo = str(estado_luces["modo"]).strip().upper()
+                if modo in ("AUTO", "AUTOMATICO", "AUTOMÁTICO"):
                     datos["modo_iluminacion"] = "AUTOMATICO"
-            elif contenido in ("OFF", "AUTO_OFF"):
-                datos["luces"] = "APAGADAS"
-                datos["zona1"] = "APAGADA"
-                datos["zona2"] = "APAGADA"
-                datos["zona3"] = "APAGADA"
-                if contenido == "AUTO_OFF":
-                    datos["modo_iluminacion"] = "AUTOMATICO"
-            elif contenido == "MODO_AUTO":
+                elif modo == "MANUAL":
+                    datos["modo_iluminacion"] = "MANUAL"
+            for zona in ("zona1", "zona2", "zona3"):
+                if zona in estado_luces:
+                    v = str(estado_luces[zona]).strip().upper()
+                    datos[zona] = "ENCENDIDA" if v in ("ON", "ENCENDIDA", "ENCENDIDO") else "APAGADA"
+        except (json.JSONDecodeError, TypeError):
+            texto = contenido.strip().upper()
+
+            if texto in ("ON", "ENCENDIDA", "ENCENDIDAS"):
+                datos["zona1"] = datos["zona2"] = datos["zona3"] = "ENCENDIDA"
+
+            elif texto in ("OFF", "APAGADA", "APAGADAS"):
+                datos["zona1"] = datos["zona2"] = datos["zona3"] = "APAGADA"
+
+            elif texto == "AUTO_ON":
+                datos["zona1"] = datos["zona2"] = datos["zona3"] = "ENCENDIDA"
                 datos["modo_iluminacion"] = "AUTOMATICO"
-            elif contenido == "MODO_MANUAL":
+
+            elif texto == "AUTO_OFF":
+                datos["zona1"] = datos["zona2"] = datos["zona3"] = "APAGADA"
+                datos["modo_iluminacion"] = "AUTOMATICO"
+
+            elif texto == "MODO_AUTO":
+                datos["modo_iluminacion"] = "AUTOMATICO"
+
+            elif texto == "MODO_MANUAL":
                 datos["modo_iluminacion"] = "MANUAL"
+
             else:
-                datos["luces"] = contenido
+                datos["luces"] = texto
+
+        # Derivar estado global (nunca PARCIAL)
+        zonas = [datos["zona1"], datos["zona2"], datos["zona3"]]
+        datos["luces"] = "ENCENDIDAS" if all(z == "ENCENDIDA" for z in zonas) else "APAGADAS"
 
     elif topic == f"{BASE}/actuadores/ventilador":
         # "ON" o "OFF"

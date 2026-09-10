@@ -3,6 +3,12 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
+from iot import globals as gl
+
 class MongoDBManager:
     def __init__(self):
         """Inicializa la conexión y define las 5 colecciones obligatorias."""

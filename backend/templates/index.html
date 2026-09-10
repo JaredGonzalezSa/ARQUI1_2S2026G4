@@ -1080,8 +1080,10 @@
                     </div>
                 </div>
 
-                <button class="reset-button" onclick="enviarComando('sistema', 'RESTABLECER')">
-                    ⚠ Restablecer el estado de emergencia
+                <button class="reset-button" 
+                        onclick="enviarComando('sistema', 'RESTABLECER')"
+                        title="Reactiva el buzzer después de una emergencia silenciada. Solo funciona si el gas ya bajó.">
+                    ⚠ Restablecer alarma (reactivar buzzer)
                 </button>
 
                 <div id="mensajeComando" class="command-message"></div>
@@ -1406,7 +1408,7 @@
             btnSilenciar.disabled = false;
 
         } else if (alarma === "SILENCIADA" || alarma === "SILENCIADO") {
-            // Alarma silenciada (amarillo) — pero el botón sigue habilitado
+            // Alarma silenciada (amarillo) — botón deshabilitado
             btnActiva.textContent = "Activa";
             btnActiva.style.backgroundColor = "";
             btnActiva.style.color = "";
@@ -1415,7 +1417,7 @@
             btnSilenciar.textContent = "Silenciada";
             btnSilenciar.style.backgroundColor = "#e6a700";
             btnSilenciar.style.color = "white";
-            btnSilenciar.disabled = false;   // <- AHORA SÍ, siempre habilitado
+            btnSilenciar.disabled = true;
 
         } else {
             // Desactivada / desconocida
@@ -1438,6 +1440,7 @@
     let ultimoCiclo = -1;
     let ultimoArm64 = "";
     let datosHistorialCargados = false;
+    let ultimoModoIluminacion = "---";
 
     function textoEstadoGlobal(estado) {
         if (estado === "NORMAL") {
@@ -1622,8 +1625,32 @@
 
     async function enviarComando(dispositivo, accion) {
         const mensaje = elemento("mensajeComando");
-        mensaje.textContent = "Enviando comando...";
 
+        if (dispositivo === "luces" &&
+            (accion === "ENCENDER" || accion === "APAGAR")) {
+
+            const modoActual = normalizar(ultimoModoIluminacion);
+
+            if (modoActual === "AUTOMATICO" || modoActual === "AUTOMÁTICO" || modoActual === "AUTO") {
+
+                const confirmar = confirm(
+                    "Estás en modo AUTOMÁTICO.\n\n" +
+                    "¿Quieres cambiar a modo MANUAL y " +
+                    (accion === "ENCENDER" ? "encender" : "apagar") +
+                    " las luces?"
+                );
+
+                                if (!confirmar) {
+                    mensaje.textContent = "Comando cancelado.";
+                    return;
+                }
+
+                ultimoModoIluminacion = "MANUAL";
+                marcarBotonActivo("btnModoManual", ["btnModoAutomatico", "btnModoManual"]);
+            }
+        }
+
+        mensaje.textContent = "Enviando comando...";
         marcarBotonInmediato(dispositivo, accion);
 
         try {
@@ -1640,7 +1667,6 @@
                 mensaje.textContent = "Comando enviado: " + texto;
                 mostrarToast("Comando enviado: " + texto);
 
-                // Refrescar para confirmar con el backend
                 setTimeout(() => {
                     actualizarDatos();
                     cargarHistorial();

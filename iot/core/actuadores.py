@@ -14,7 +14,6 @@ class ActuadorManager:
     def __init__(self):
         print("[ACTUADORES] Inicializando...")
         
-        self.PIN_VENTILADOR = gl.PIN_VENTILADOR
         self.PIN_LED_PUERTA = gl.PIN_LED_PUERTA
         self.PIN_SERVO = gl.PIN_SERVO
         self.PIN_LED_VERDE = gl.PIN_LED_VERDE
@@ -23,6 +22,8 @@ class ActuadorManager:
         self.PIN_LED_ZONA1 = gl.PIN_LED_ZONA1
         self.PIN_LED_ZONA2 = gl.PIN_LED_ZONA2
         self.PIN_LED_ZONA3 = gl.PIN_LED_ZONA3
+        self.PIN_LED_VENTILADOR = gl.PIN_LED_VENTILADOR  
+        self.PIN_RELAY = gl.PIN_RELAY                   
         self.PIN_BUZZER = gl.PIN_BUZZER
         self.PIN_BOTON1 = gl.PIN_BOTON1
         self.PIN_BOTON2 = gl.PIN_BOTON2
@@ -40,6 +41,7 @@ class ActuadorManager:
         self.modo_luz_auto = True
         self.estado_actual_global = gl.ESTADO_NORMAL
         self.timer_puerta = None
+        self.modo_ventilador_auto = True
         
         # ==========================================
         # CONFIGURACIÓN DEL BUZZER PASIVO
@@ -63,6 +65,18 @@ class ActuadorManager:
         self._actualizar_leds_estado(gl.ESTADO_NORMAL)
         self._set_buzzer(False)
         self._set_luces(False)
+
+        self.estado_boton_anterior = {
+            'boton1': False,
+            'boton2': False,
+            'boton3': False,
+            'boton4': False
+        }   
+
+        self.servo_moviendo = False
+        self.servo_tiempo_inicio = 0
+        self.servo_duracion = 0.5            
+        self.servo_estado_final = False
         
         if self.lcd_disponible:
             self.actualizar_lcd("Sistema Iniciado", "Esperando...")
@@ -88,7 +102,6 @@ class ActuadorManager:
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
         
-        GPIO.setup(self.PIN_VENTILADOR, GPIO.OUT)
         GPIO.setup(self.PIN_LED_PUERTA, GPIO.OUT)
         GPIO.setup(self.PIN_LED_VERDE, GPIO.OUT)
         GPIO.setup(self.PIN_LED_AMARILLO, GPIO.OUT)
@@ -96,6 +109,8 @@ class ActuadorManager:
         GPIO.setup(self.PIN_LED_ZONA1, GPIO.OUT)
         GPIO.setup(self.PIN_LED_ZONA2, GPIO.OUT)
         GPIO.setup(self.PIN_LED_ZONA3, GPIO.OUT)
+        GPIO.setup(self.PIN_LED_VENTILADOR, GPIO.OUT) 
+        GPIO.setup(self.PIN_RELAY, GPIO.OUT)          
         GPIO.setup(self.PIN_BUZZER, GPIO.OUT)
         
         GPIO.setup(self.PIN_BOTON1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -103,7 +118,6 @@ class ActuadorManager:
         GPIO.setup(self.PIN_BOTON3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.PIN_BOTON4, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         
-        GPIO.output(self.PIN_VENTILADOR, False)
         GPIO.output(self.PIN_LED_PUERTA, False)
         GPIO.output(self.PIN_LED_VERDE, False)
         GPIO.output(self.PIN_LED_AMARILLO, False)
@@ -111,6 +125,8 @@ class ActuadorManager:
         GPIO.output(self.PIN_LED_ZONA1, False)
         GPIO.output(self.PIN_LED_ZONA2, False)
         GPIO.output(self.PIN_LED_ZONA3, False)
+        GPIO.output(self.PIN_LED_VENTILADOR, False)  
+        GPIO.output(self.PIN_RELAY, False)         
         GPIO.output(self.PIN_BUZZER, False)
     
     def _inicializar_buzzer(self):
@@ -298,13 +314,19 @@ class ActuadorManager:
         GPIO.output(self.PIN_LED_ROJO, estado == gl.ESTADO_EMERGENCIA)
     
     def encender_ventilador(self):
-        GPIO.output(self.PIN_VENTILADOR, True)
+        """Enciende el ventilador activando el relé"""
+        GPIO.output(self.PIN_RELAY, True)           # Activa el relé
         self.ventilador_encendido = True
+        GPIO.output(self.PIN_LED_VENTILADOR, True) 
+        print("[VENTILADOR] Encendido (Relé activado)")
         return True
-    
+
     def apagar_ventilador(self):
-        GPIO.output(self.PIN_VENTILADOR, False)
+        """Apaga el ventilador desactivando el relé"""
+        GPIO.output(self.PIN_RELAY, False)          # Desactiva el relé
         self.ventilador_encendido = False
+        GPIO.output(self.PIN_LED_VENTILADOR, False)
+        print("[VENTILADOR] Apagado (Relé desactivado)")
         return True
     
     def toggle_ventilador(self):
@@ -312,9 +334,17 @@ class ActuadorManager:
             return self.apagar_ventilador()
         else:
             return self.encender_ventilador()
-    
+
+    def set_modo_ventilador(self, auto=True):
+        self.modo_ventilador_auto = auto
+        return True
+
+    def toggle_modo_ventilador(self):
+        self.modo_ventilador_auto = not self.modo_ventilador_auto
+        return self.modo_ventilador_auto
+
     def abrir_puerta(self):
-        self.servo_pwm.ChangeDutyCycle(7.5)
+        self.servo_pwm.ChangeDutyCycle(9.72)  # 130°
         time.sleep(0.5)
         self.servo_pwm.ChangeDutyCycle(0)
         GPIO.output(self.PIN_LED_PUERTA, True)
@@ -322,9 +352,21 @@ class ActuadorManager:
         self._cancelar_timer_puerta()
         print("[PUERTA] Abierta")
         return True
+
+    def actualizar_servo(self):
+        """Actualiza el estado del servo (llamar en cada ciclo del loop)"""
+        if self.servo_moviendo:
+            if time.time() - self.servo_tiempo_inicio >= self.servo_duracion:
+                self.servo_pwm.ChangeDutyCycle(0)
+                GPIO.output(self.PIN_LED_PUERTA, self.servo_estado_final)
+                self.servo_moviendo = False
+                if self.servo_estado_final:
+                    print("[PUERTA] Abierta")
+                else:
+                    print("[PUERTA] Cerrada")
     
     def cerrar_puerta(self):
-        self.servo_pwm.ChangeDutyCycle(2.5)
+        self.servo_pwm.ChangeDutyCycle(2.5)   # 0°
         time.sleep(0.5)
         self.servo_pwm.ChangeDutyCycle(0)
         GPIO.output(self.PIN_LED_PUERTA, False)
@@ -356,47 +398,33 @@ class ActuadorManager:
             return self.abrir_puerta()
     
     def leer_botones(self):
+        """Lee los botones con deteccion de flanco de bajada + debounce por tiempo"""
         t_actual = time.time() * 1000
         resultado = {}
-        
-        if GPIO.input(self.PIN_BOTON1) == 0:
-            if t_actual - self.ultimo_boton['boton1'] > self.DEBOUNCE_MS:
-                self.ultimo_boton['boton1'] = t_actual
-                self.estado_boton['boton1'] = True
-                resultado['boton1'] = True
-                print("[BOTON 1] Detectado")
-        else:
-            self.estado_boton['boton1'] = False
-        
-        if GPIO.input(self.PIN_BOTON2) == 0:
-            if t_actual - self.ultimo_boton['boton2'] > self.DEBOUNCE_MS:
-                self.ultimo_boton['boton2'] = t_actual
-                self.estado_boton['boton2'] = True
-                resultado['boton2'] = True
-                print("[BOTON 2] Detectado")
-        else:
-            self.estado_boton['boton2'] = False
-        
-        if GPIO.input(self.PIN_BOTON3) == 0:
-            if t_actual - self.ultimo_boton['boton3'] > self.DEBOUNCE_MS:
-                self.ultimo_boton['boton3'] = t_actual
-                self.estado_boton['boton3'] = True
-                resultado['boton3'] = True
-                print("[BOTON 3] Detectado")
-        else:
-            self.estado_boton['boton3'] = False
-        
-        if GPIO.input(self.PIN_BOTON4) == 0:
-            if t_actual - self.ultimo_boton['boton4'] > self.DEBOUNCE_MS:
-                self.ultimo_boton['boton4'] = t_actual
-                self.estado_boton['boton4'] = True
-                resultado['boton4'] = True
-                print("[BOTON 4] Detectado")
-        else:
-            self.estado_boton['boton4'] = False
-        
+        DEBOUNCE_MS = 150  # ajustá según tus pruebas (50-300ms típico)
+
+        botones = {
+            'boton1': self.PIN_BOTON1,
+            'boton2': self.PIN_BOTON2,
+            'boton3': self.PIN_BOTON3,
+            'boton4': self.PIN_BOTON4,
+        }
+
+        for nombre, pin in botones.items():
+            estado_actual = GPIO.input(pin) == 0
+            fue_presionado = estado_actual and not self.estado_boton_anterior[nombre]
+
+            if fue_presionado:
+                tiempo_desde_ultimo = t_actual - self.ultimo_boton.get(nombre, 0)
+                if tiempo_desde_ultimo > DEBOUNCE_MS:
+                    self.ultimo_boton[nombre] = t_actual
+                    resultado[nombre] = True
+                    print(f"[{nombre.upper()}] Presionado")
+
+            self.estado_boton_anterior[nombre] = estado_actual
+
         return resultado
-    
+        
     def obtener_estados(self):
         return {
             'puerta': 'ABIERTA' if self.puerta_abierta else 'CERRADA',

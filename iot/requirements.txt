@@ -1,0 +1,6 @@
+RPi.GPIO==0.7.1
+Adafruit-DHT==1.4.0
+paho-mqtt==1.6.1
+pymongo==4.6.1
+python-dotenv==1.0.0
+pyserial==3.5

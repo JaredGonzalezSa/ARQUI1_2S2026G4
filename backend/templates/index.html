@@ -1349,11 +1349,12 @@
         }
     }
 
+    let timerPuerta = null;
+
     function actualizarBotonesActivos(datos) {
-        const puerta = normalizar(datos.puerta);
-        const modo = normalizar(datos.modo_iluminacion);
-        const ventilador = normalizar(datos.ventilador);
         const alarma = normalizar(datos.alarma);
+        const modo = normalizar(datos.modo_iluminacion);
+
         const btnActiva = document.getElementById("btnAlarmaActiva");
         const btnSilenciar = document.getElementById("btnAlarmaSilenciar");
 
@@ -1361,131 +1362,73 @@
         const zona2 = normalizar(datos.zona2);
         const zona3 = normalizar(datos.zona3);
 
-        // Puerta
-        if (puerta === "ABIERTA" || puerta === "ABIERTO") {
-            marcarBotonActivo("btnPuertaAbrir", ["btnPuertaAbrir", "btnPuertaCerrar"]);
-        } else if (puerta === "CERRADA" || puerta === "CERRADO") {
-            marcarBotonActivo("btnPuertaCerrar", ["btnPuertaAbrir", "btnPuertaCerrar"]);
-        } else {
-            marcarBotonActivo(null, ["btnPuertaAbrir", "btnPuertaCerrar"]);
-        }
+        // Zonas (esto sí viene del backend)
+        actualizarEstadoZona("zona1", "Cuarto 1", zona1);
+        actualizarEstadoZona("zona2", "Cuarto 2", zona2);
+        actualizarEstadoZona("zona3", "Cuarto 3", zona3);
 
-        if (btnActiva) {
-        btnActiva.textContent = "Activa";
-        btnActiva.style.backgroundColor = "";
-        btnActiva.style.color = "";
-        btnActiva.disabled = true;
-        }
-        if (btnSilenciar) {
-        btnSilenciar.textContent = "Silenciar";
-        btnSilenciar.style.backgroundColor = "";
-        btnSilenciar.style.color = "";
-        btnSilenciar.disabled = false;
-        btnSilenciar.onclick = function() {
-            enviarComando('alarma', 'SILENCIAR');
-        };
-        }
-
-        // Luces
-        const todasEncendidas =
-            zona1 === "ENCENDIDA" &&
-            zona2 === "ENCENDIDA" &&
-            zona3 === "ENCENDIDA";
-
-        const todasApagadas =
-            zona1 === "APAGADA" &&
-            zona2 === "APAGADA" &&
-            zona3 === "APAGADA";
-
-        if (todasEncendidas) {
-            marcarBotonActivo("btnLucesEncender", ["btnLucesEncender", "btnLucesApagar"]);
-        } else if (todasApagadas) {
-            marcarBotonActivo("btnLucesApagar", ["btnLucesEncender", "btnLucesApagar"]);
-        } else {
-            marcarBotonActivo(null, ["btnLucesEncender", "btnLucesApagar"]);
-        }
-
-        // Modo de iluminación
-        if (modo === "AUTOMATICO" || modo === "AUTOMÁTICO") {
+        // MODO DE ILUMINACIÓN: se actualiza solo
+        if (modo === "AUTOMATICO" || modo === "AUTOMÁTICO" || modo === "AUTO") {
             marcarBotonActivo("btnModoAutomatico", ["btnModoAutomatico", "btnModoManual"]);
         } else if (modo === "MANUAL") {
             marcarBotonActivo("btnModoManual", ["btnModoAutomatico", "btnModoManual"]);
-        } else {
-            marcarBotonActivo(null, ["btnModoAutomatico", "btnModoManual"]);
         }
 
-        // Ventilador
-        if (ventilador === "ENCENDIDO" || ventilador === "ENCENDIDA") {
-            marcarBotonActivo(
-                "btnVentiladorEncender",
-                ["btnVentiladorEncender", "btnVentiladorApagar"]
-            );
-        } else if (ventilador === "APAGADO" || ventilador === "APAGADA") {
-            marcarBotonActivo(
-                "btnVentiladorApagar",
-                ["btnVentiladorEncender", "btnVentiladorApagar"]
-            );
-        } else {
-            marcarBotonActivo(
-                null,
-                ["btnVentiladorEncender", "btnVentiladorApagar"]
-            );
+
+        if (modo === "AUTOMATICO" || modo === "AUTOMÁTICO" || modo === "AUTO") {
+            const todasEncendidas =
+                zona1 === "ENCENDIDA" &&
+                zona2 === "ENCENDIDA" &&
+                zona3 === "ENCENDIDA";
+
+            if (todasEncendidas) {
+                marcarBotonActivo("btnLucesEncender", ["btnLucesEncender", "btnLucesApagar"]);
+            } else {
+                marcarBotonActivo("btnLucesApagar", ["btnLucesEncender", "btnLucesApagar"]);
+            }
         }
 
-        // Alarma
-        // Estados de la alarma
-        if (alarma === "SILENCIADA" || alarma === "SILENCIADO") {
-            // Alarma silenciada (amarillo)
-            if (btnSilenciar) {
-                btnSilenciar.textContent = "Silenciada";
-                btnSilenciar.style.backgroundColor = "#e6a700";
-                btnSilenciar.style.color = "white";
-                btnSilenciar.disabled = true;
-            }
-            if (btnActiva) {
-                btnActiva.textContent = "Activa";
-                btnActiva.style.backgroundColor = "";
-                btnActiva.style.color = "";
-                btnActiva.disabled = true;
-            }
-        } else if (alarma === "ACTIVA" || alarma === "ACTIVO" || 
-                alarma === "ENCENDIDA" || alarma === "ENCENDIDO" || 
-                alarma === "ON") {
+        // ALARMA
+        if (!btnActiva || !btnSilenciar) return;
+
+        if (alarma === "ACTIVA" || alarma === "ACTIVO" ||
+            alarma === "ENCENDIDA" || alarma === "ENCENDIDO" ||
+            alarma === "ON") {
             // Alarma activa (rojo)
-            if (btnActiva) {
-                btnActiva.textContent = "Activa";
-                btnActiva.style.backgroundColor = "#dc3545";
-                btnActiva.style.color = "white";
-                btnActiva.disabled = true;
-            }
-            if (btnSilenciar) {
-                btnSilenciar.textContent = "Silenciar";
-                btnSilenciar.style.backgroundColor = "";
-                btnSilenciar.style.color = "";
-                btnSilenciar.disabled = false;
-                btnSilenciar.onclick = function() {
-                    enviarComando('alarma', 'SILENCIAR');
-                };
-            }
-        } else {
-            // Alarma desactivada o estado desconocido
-            if (btnActiva) {
-                btnActiva.textContent = "Activa";
-                btnActiva.style.backgroundColor = "";
-                btnActiva.style.color = "";
-                btnActiva.disabled = true;
-            }
-            if (btnSilenciar) {
-                btnSilenciar.textContent = "Silenciar";
-                btnSilenciar.style.backgroundColor = "";
-                btnSilenciar.style.color = "";
-                btnSilenciar.disabled = false;
-                btnSilenciar.onclick = function() {
-                    enviarComando('alarma', 'SILENCIAR');
-                };
-            }
-        }
+            btnActiva.textContent = "Activa";
+            btnActiva.style.backgroundColor = "#dc3545";
+            btnActiva.style.color = "white";
+            btnActiva.disabled = true;
 
+            btnSilenciar.textContent = "Silenciar";
+            btnSilenciar.style.backgroundColor = "";
+            btnSilenciar.style.color = "";
+            btnSilenciar.disabled = false;
+
+        } else if (alarma === "SILENCIADA" || alarma === "SILENCIADO") {
+            // Alarma silenciada (amarillo) — pero el botón sigue habilitado
+            btnActiva.textContent = "Activa";
+            btnActiva.style.backgroundColor = "";
+            btnActiva.style.color = "";
+            btnActiva.disabled = true;
+
+            btnSilenciar.textContent = "Silenciada";
+            btnSilenciar.style.backgroundColor = "#e6a700";
+            btnSilenciar.style.color = "white";
+            btnSilenciar.disabled = false;   // <- AHORA SÍ, siempre habilitado
+
+        } else {
+            // Desactivada / desconocida
+            btnActiva.textContent = "Activa";
+            btnActiva.style.backgroundColor = "";
+            btnActiva.style.color = "";
+            btnActiva.disabled = true;
+
+            btnSilenciar.textContent = "Silenciar";
+            btnSilenciar.style.backgroundColor = "";
+            btnSilenciar.style.color = "";
+            btnSilenciar.disabled = false;
+        }
     }
 
     /* =========================================================
@@ -1619,39 +1562,95 @@
         }, 2500);
     }
 
+    function marcarBotonInmediato(dispositivo, accion) {
+        // PUERTA
+        if (dispositivo === "puerta") {
+            if (accion === "ABRIR") {
+                marcarBotonActivo("btnPuertaAbrir", ["btnPuertaAbrir", "btnPuertaCerrar"]);
+
+                if (timerPuerta) {
+                    clearTimeout(timerPuerta);
+                }
+
+                timerPuerta = setTimeout(() => {
+                    marcarBotonActivo("btnPuertaCerrar", ["btnPuertaAbrir", "btnPuertaCerrar"]);
+                    timerPuerta = null;
+                }, 6000);
+
+            } else if (accion === "CERRAR") {
+                if (timerPuerta) {
+                    clearTimeout(timerPuerta);
+                    timerPuerta = null;
+                }
+                marcarBotonActivo("btnPuertaCerrar", ["btnPuertaAbrir", "btnPuertaCerrar"]);
+            }
+            return;
+        }
+
+        // LUCES
+        if (dispositivo === "luces") {
+            if (accion === "ENCENDER") {
+                marcarBotonActivo("btnLucesEncender", ["btnLucesEncender", "btnLucesApagar"]);
+            } else if (accion === "APAGAR") {
+                marcarBotonActivo("btnLucesApagar", ["btnLucesEncender", "btnLucesApagar"]);
+            }
+            return;
+        }
+
+        // VENTILADOR
+        if (dispositivo === "ventilador") {
+            if (accion === "ENCENDER") {
+                marcarBotonActivo("btnVentiladorEncender", ["btnVentiladorEncender", "btnVentiladorApagar"]);
+            } else if (accion === "APAGAR") {
+                marcarBotonActivo("btnVentiladorApagar", ["btnVentiladorEncender", "btnVentiladorApagar"]);
+            }
+            return;
+        }
+
+        // ALARMA
+        if (dispositivo === "alarma" && accion === "SILENCIAR") {
+            const btnSilenciar = elemento("btnAlarmaSilenciar");
+            if (btnSilenciar) {
+                btnSilenciar.textContent = "Silenciada";
+                btnSilenciar.style.backgroundColor = "#e6a700";
+                btnSilenciar.style.color = "white";
+                btnSilenciar.disabled = true;
+            }
+        }
+
+    }
+
     async function enviarComando(dispositivo, accion) {
         const mensaje = elemento("mensajeComando");
         mensaje.textContent = "Enviando comando...";
 
+        marcarBotonInmediato(dispositivo, accion);
+
         try {
             const respuesta = await fetch("/api/control", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    dispositivo: dispositivo,
-                    accion: accion
-                })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ dispositivo, accion })
             });
 
             const resultado = await respuesta.json();
 
             if (resultado.ok) {
                 const texto = `${dispositivo} → ${accion}`;
-
                 mensaje.textContent = "Comando enviado: " + texto;
                 mostrarToast("Comando enviado: " + texto);
 
-                setTimeout(cargarHistorial, 500);
+                // Refrescar para confirmar con el backend
+                setTimeout(() => {
+                    actualizarDatos();
+                    cargarHistorial();
+                }, 1000);
             } else {
                 mensaje.textContent = "No se pudo enviar el comando.";
                 mostrarToast("No se pudo enviar el comando.");
             }
-
         } catch (error) {
             console.error("Error enviando comando:", error);
-
             mensaje.textContent = "Error enviando el comando.";
             mostrarToast("Error enviando el comando.");
         }
@@ -1816,8 +1815,8 @@
     cargarHistorial();
 
     setInterval(actualizarReloj, 1000);
-    setInterval(actualizarDatos, 10000);
-    setInterval(cargarHistorial, 10000);
+    setInterval(actualizarDatos, 500);
+    setInterval(cargarHistorial, 5000);
 </script>
 </body>
 </html>

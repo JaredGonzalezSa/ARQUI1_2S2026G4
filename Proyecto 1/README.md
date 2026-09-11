@@ -10,8 +10,6 @@
 
 </div>
 
----
-
 ## Acerca del proyecto
 
 Esta carpeta contiene la implementación del Proyecto 1: Edificio Inteligente IoT con Raspberry Pi ARM64. El sistema integra hardware, software y procesamiento de bajo nivel para controlar y monitorear una maqueta de un edificio inteligente.
@@ -90,9 +88,9 @@ La solución utiliza una Raspberry Pi con Linux de 64 bits como plataforma princ
 
 | Categoría           | Tecnologías                                                                                           |
 | ------------------- | ----------------------------------------------------------------------------------------------------- |
-| 💻 **Lenguajes**     | Python 3, Ensamblador AArch64, JavaScript                                                             |
+| 💻 **Lenguajes**     | Python 3, Ensamblador AArch64                                                                         |
 | ⚙️ **Backend web**   | Flask                                                                                                 |
-| 🎨 **Frontend web**  | HTML5, CSS3, JavaScript                                                                               |
+| 🎨 **Frontend web**  | HTML, CSS, JavaScript                                                                                 |
 | 📡 **Comunicación**  | MQTT, EMQX                                                                                            |
 | 🗄️ **Base de datos** | MongoDB Atlas                                                                                         |
 | 🔧 **Hardware**      | Raspberry Pi, DHT11, HC-SR04, sensor de gas, LDR, servomotor, buzzer, ventilador, LCD, LEDs y botones |

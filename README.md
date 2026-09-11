@@ -1,5 +1,6 @@
 # Arquitectura de Computadores y Ensambladores 1
 
+<div align="center">
 <table>
 <tr>
 <td valign="top" width="50%">
@@ -28,6 +29,7 @@
 </td>
 </tr>
 </table>
+</div>
 
 ---
 
@@ -67,7 +69,7 @@ El repositorio se organiza en diferentes directorios de acuerdo con el propósit
 |  No.  | Actividad                     | Descripción                                     | Estado |
 | :---: | :---------------------------- | :---------------------------------------------- | :----: |
 |  01   | [Proyecto 1](./Proyecto%201/) | Edificio Inteligente IoT con Raspberry Pi ARM64 |   🚧    |
-|  02   | [Proyecto 2](./Proyecto%201/) | Pendiente                                       |   ⏳    |
+|  02   | [Proyecto 2](./Proyecto%202/) | Pendiente                                       |   ⏳    |
 
 ### Estados
 

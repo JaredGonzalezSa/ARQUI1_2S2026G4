@@ -90,6 +90,7 @@ El repositorio se organiza en diferentes directorios de acuerdo con el propósit
 │
 ├── 📁 Proyecto 1/
 │   ├── 📁 backend
+│   ├── 📁 docs
 │   ├── 📁 iot
 │   ├── 📁 scripts
 │   └── 📄 README.md

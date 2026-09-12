@@ -49,37 +49,46 @@ La solución utiliza una Raspberry Pi con Linux de 64 bits como plataforma princ
 
 ```text
 /
-├── 📁 backend/
-│   ├── app.py                 # Servidor Flask, MQTT, API y dashboard
-│   ├── globals.py             # Configuración general y umbrales
-│   ├── mongo.py               # Manejo de MongoDB Atlas
-│   ├── requirements.txt
-│   ├── 📁 static/             # Recursos gráficos del dashboard
-│   │   └── 📁 img/
+├── 📁 backend/                         # Backend web y comunicación con el dashboard
+│   ├── app.py                         # Servidor Flask, API HTTP y cliente MQTT
+│   ├── mongo.py                       # Acceso y operaciones sobre MongoDB Atlas
+│   ├── requirements.txt               # Dependencias del backend
+│   ├── 📁 static/
+│   │   └── 📁 img/                    # Recursos gráficos del dashboard
+│   │       ├── 📁 control/            # Iconos de controles y actuadores
+│   │       └── 📁 sensores/           # Iconos de sensores
 │   └── 📁 templates/
-│       └── index.html         # Interfaz principal
+│       └── index.html                 # Interfaz web, estilos y lógica del dashboard
 │
-├── 📁 iot/
-│   ├── main.py                # Núcleo del sistema IoT
-│   ├── globals.py             # Pines, MQTT, tiempos y umbrales
-│   ├── arm64_integracion.py   # Integración Python ↔ ARM64
-│   ├── arm64_stats.s          # Código fuente AArch64
-│   ├── arm64_stats            # Binario ARM64
-│   ├── requirements.txt
+├── 📁 iot/                             # Software ejecutado en la Raspberry Pi
+│   ├── main.py                        # Punto de entrada y ciclo principal del sistema IoT
+│   ├── globals.py                     # Pines GPIO, MQTT, umbrales, tiempos y configuración
+│   ├── arm64_integracion.py           # Integración entre Python y el módulo ARM64
+│   ├── arm64_stats.s                  # Código fuente del módulo en AArch64
+│   ├── arm64_stats                    # Binario ejecutable del módulo ARM64
+│   ├── limpiar_retain.py              # Limpieza de mensajes retenidos en MQTT
+│   ├── test.py                        # Prueba rápida de los botones físicos
+│   ├── requirements.txt               # Dependencias del núcleo IoT
 │   └── 📁 core/
-│       ├── sensores.py        # Lectura y administración de sensores
-│       └── actuadores.py      # Control de actuadores, LCD y botones
+│       ├── __init__.py
+│       ├── sensores.py                # Lectura y administración de sensores
+│       └── actuadores.py              # Control de actuadores, LCD y botones
 │
-├── 📁 scripts/
-│   ├── lcd_test.py
-│   ├── test_buzzer.py
-│   ├── test_dht11.py
-│   ├── test_leds.py
-│   ├── test_mongo.py
-│   ├── test_mqtt_pub.py
-│   └── test_mqtt_sub.py
+├── 📁 scripts/                         # Pruebas aisladas de hardware y servicios
+│   ├── lcd_test.py                    # Prueba de comunicación con la pantalla LCD
+│   ├── leds_test.py                   # Prueba secuencial de LEDs de iluminación
+│   ├── test_buzzer.py                 # Prueba del buzzer
+│   ├── test_dht11.py                  # Prueba del sensor DHT11
+│   ├── test_leds.py                   # Prueba interactiva de LEDs de estado e iluminación
+│   ├── test_mongo.py                  # Prueba de conexión y escritura en MongoDB Atlas
+│   ├── test_mqtt_pub.py               # Prueba de publicación MQTT
+│   └── test_mqtt_sub.py               # Prueba de suscripción MQTT
 │
-└── 📄 README.md
+├── 📁 docs/
+│   └── manual-tecnico.md              # Documentación técnica completa del sistema
+│
+├── .gitignore                         # Archivos y directorios excluidos del repositorio
+└── README.md                          # Descripción general, configuración y acceso a la documentación
 ```
 
 ---
@@ -142,3 +151,18 @@ pip install -r requirements.txt
 
 El núcleo IoT se ejecuta sobre la Raspberry Pi con acceso a los sensores, actuadores, GPIO y puerto serial configurados para la maqueta.
 
+## Documentación
+
+La documentación técnica completa del sistema se encuentra en:
+
+- [Manual técnico](docs/manual-tecnico.md)
+
+El manual explica la arquitectura implementada, los subsistemas, el flujo MQTT, el modelo de datos en MongoDB Atlas, el backend/dashboard, la puesta en marcha y el funcionamiento del módulo ARM64. Los diagramas se manejan como entregables separados.
+
+- [Diagrama de arquitectura](docs/diagrama-arquitectura.png)
+
+El diagrama de arquitectura muestra la organización general del sistema y la interacción entre la Raspberry Pi, los sensores y actuadores, el broker MQTT, MongoDB Atlas, el dashboard web y el módulo de procesamiento ARM64.
+
+- [Diagrama de conexiones y flujo](docs/diagrama-conexiones-flujo.png)
+
+El diagrama de conexiones y flujo representa las conexiones entre los componentes físicos del edificio inteligente y el recorrido de la información dentro del sistema, incluyendo la adquisición de datos, comunicación mediante MQTT, almacenamiento en MongoDB, control desde el dashboard y el flujo de procesamiento Python -> datos.txt -> ARM64 -> resultado.txt -> Python -> MongoDB Atlas -> Dashboard.

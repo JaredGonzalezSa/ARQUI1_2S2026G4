@@ -5,10 +5,14 @@
 <tr>
 <td valign="top" width="50%">
 
-### 📚Información del curso 
+<div align="center">
+
+  ### 📚 Información del curso 
+
+</div>
 
 | **Ítem**        | **Detalle**              |
-| --------------- | ------------------------ |
+| :-------------- | :----------------------- |
 | **Período**     | Segundo Semestre 2026    |
 | **Sección**     | B                        |
 | **Catedrático** | Otto René Escobar Leiva  |
@@ -17,10 +21,14 @@
 </td>
 <td valign="top" width="50%">
 
+<div align="center">
+
 ### 👥 Grupo 4
 
+</div>
+
 | **Carné** | **Nombre Completo**                |
-| --------- | ---------------------------------- |
+| :-------- | :--------------------------------- |
 | 202500177 | Carlos Jared González Sagastume    |
 | 202505138 | Ludwin Alexander Pérez Salvatierra |
 | 202504020 | Patricio Manuel Romero Castellanos |

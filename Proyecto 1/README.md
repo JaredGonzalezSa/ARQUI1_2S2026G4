@@ -166,3 +166,5 @@ El diagrama de arquitectura muestra la organización general del sistema y la in
 - [Diagrama de conexiones y flujo](docs/diagrama-conexiones-flujo.png)
 
 El diagrama de conexiones y flujo representa las conexiones entre los componentes físicos del edificio inteligente y el recorrido de la información dentro del sistema, incluyendo la adquisición de datos, comunicación mediante MQTT, almacenamiento en MongoDB, control desde el dashboard y el flujo de procesamiento Python -> datos.txt -> ARM64 -> resultado.txt -> Python -> MongoDB Atlas -> Dashboard.
+
+- [Evidencias de funcionamiento](docs/img/)

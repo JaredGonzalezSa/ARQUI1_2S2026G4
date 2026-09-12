@@ -159,7 +159,7 @@ La documentación técnica completa del sistema se encuentra en:
 
 El manual explica la arquitectura implementada, los subsistemas, el flujo MQTT, el modelo de datos en MongoDB Atlas, el backend/dashboard, la puesta en marcha y el funcionamiento del módulo ARM64. Los diagramas se manejan como entregables separados.
 
-- [Diagrama de arquitectura](docs/diagrama-arquitectura.png)
+- [Diagrama de arquitectura](docs/diagrama-arquitectura.svg)
 
 El diagrama de arquitectura muestra la organización general del sistema y la interacción entre la Raspberry Pi, los sensores y actuadores, el broker MQTT, MongoDB Atlas, el dashboard web y el módulo de procesamiento ARM64.
 

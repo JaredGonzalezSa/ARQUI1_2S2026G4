@@ -132,12 +132,19 @@ El cálculo se implementa en `backend/linear_optimizer.py`. La vista actualiza e
 
 ## 12. Puesta en marcha
 
-1. Definir `MONGO_URI` en el entorno.
-2. Instalar dependencias de `backend/requirements.txt` e `iot/requirements.txt`.
+1. Instalar una sola vez Python con soporte para entornos virtuales. En Raspberry Pi: `sudo apt install python-is-python3 python3-venv`.
+2. Definir `MONGO_URI` en el entorno o en un archivo `.env` local que no se publique en Git.
 3. Verificar el Arduino en `/dev/ttyUSB0` y el LCD en `0x27`.
-4. Ejecutar `backend/app.py`.
-5. Ejecutar `iot/main.py` desde la carpeta `iot`.
+4. Desde `backend`, ejecutar únicamente `python app.py`.
+5. Desde `iot`, ejecutar únicamente `python main.py`.
 6. Abrir `http://localhost:5000`.
+
+`bootstrap.py` detecta cada archivo `requirements.txt`, crea un `.venv` separado
+para el componente, instala las dependencias en la primera ejecución y vuelve a
+iniciar el mismo programa con el intérprete correcto. Un hash dentro del entorno
+evita reinstalar en cada arranque y permite actualizar automáticamente cuando
+cambian las dependencias. La preparación no altera MQTT, GPIO, sensores,
+actuadores ni la lógica de optimización.
 
 ## 13. Pruebas recomendadas
 

@@ -114,29 +114,43 @@ Proyecto 1/
 
 ## Puesta en marcha
 
+### Configuración única
+
+Antes del primer arranque, copie `backend/.env.example` como `backend/.env` y
+reemplace la URI de ejemplo con la conexión real de MongoDB Atlas. El archivo
+`.env` está ignorado por Git y sirve tanto al backend como al núcleo IoT.
+
+En Raspberry Pi solo se requiere una vez:
+
+```bash
+sudo apt install python-is-python3 python3-venv
+```
+
 ### Backend
 
 ```bash
 cd "Proyecto 1/backend"
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python3 app.py
+python app.py
 ```
 
-El dashboard queda disponible en `http://localhost:5000`.
+El dashboard queda disponible en `http://localhost:5000`. En la primera
+ejecución, `bootstrap.py` crea `backend/.venv`, instala las dependencias y
+reinicia el programa dentro de ese entorno. Las siguientes ejecuciones arrancan
+directamente. Si cambia `backend/requirements.txt`, las dependencias se
+sincronizan automáticamente.
 
 ### Núcleo IoT
 
 ```bash
 cd "Proyecto 1/iot"
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python3 main.py
+python main.py
 ```
 
-Se necesita una variable `MONGO_URI` válida y acceso al broker MQTT configurado en `iot/globals.py`.
+El núcleo IoT prepara de la misma forma su propio entorno en `iot/.venv`, sin
+mezclar sus dependencias con las del backend. Se necesita configurar una vez
+una variable `MONGO_URI` válida (o un archivo `.env` local) y tener acceso al
+broker MQTT configurado en `iot/globals.py`.
+
 
 ## Entregables de Fase 1
 

@@ -1,6 +1,13 @@
 import time
 import os
 import sys
+
+if __name__ == "__main__":
+    sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+    from bootstrap import ensure_runtime
+
+    ensure_runtime(__file__)
+
 import paho.mqtt.client as mqtt
 
 backend_path = os.path.join(os.path.dirname(__file__), '..', 'backend')

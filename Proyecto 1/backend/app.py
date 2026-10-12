@@ -1,5 +1,13 @@
-import json
 import os
+import sys
+
+if __name__ == "__main__":
+    sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+    from bootstrap import ensure_runtime
+
+    ensure_runtime(__file__)
+
+import json
 import re
 
 from flask import Flask, jsonify, render_template, request
@@ -13,8 +21,6 @@ from pymongo.errors import DuplicateKeyError
 from mongo import MongoDBManager
 from linear_optimizer import LinearOptimizationError, optimize_sensor_resources
 from transport import METHOD_NAMES, TransportValidationError, solve_transport
-import sys
-import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from iot import globals as gl
 

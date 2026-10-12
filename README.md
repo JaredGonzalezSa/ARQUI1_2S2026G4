@@ -76,7 +76,7 @@ El repositorio se organiza en diferentes directorios de acuerdo con el propósit
 
 |  No.  | Actividad                     | Descripción                                     | Estado |
 | :---: | :---------------------------- | :---------------------------------------------- | :----: |
-|  01   | [Proyecto 1](./Proyecto%201/) | Edificio Inteligente IoT con Raspberry Pi ARM64 |   🚧    |
+|  01   | [Proyecto 1](./Proyecto%201/) | AulaNexo: aula y laboratorio inteligente IoT |   🚧    |
 |  02   | [Proyecto 2](./Proyecto%202/) | Pendiente                                       |   ⏳    |
 
 ### Estados
@@ -91,12 +91,12 @@ El repositorio se organiza en diferentes directorios de acuerdo con el propósit
 
 Para el desarrollo de los distintos trabajos del curso se utilizarán las siguientes herramientas y tecnologías:
 
-| Categoría                        | Tecnologías                                     |
-| -------------------------------- | ----------------------------------------------- |
-| 💻 **Lenguajes**                  | Lenguaje ensamblador ARM64 (Assembly / AArch64) |
-| 🛠️ **Herramientas de desarrollo** | Ensamblador GNU (GNU Assembler / GAS)           |
-| 🧰 **Software**                   | Entorno de programación y ensamblado para ARM64 |
-| 🧠 **Plataformas**                | ARM64 / Arquitectura ARM (RISC)                 |
+| Categoría                         | Tecnologías                                      |
+| --------------------------------- | ------------------------------------------------ |
+| 💻 **Lenguajes**                   | Python, HTML, CSS y JavaScript                    |
+| 🛠️ **Herramientas de desarrollo**  | Flask, MQTT, MongoDB Atlas y control GPIO         |
+| 🧰 **Software**                    | Dashboard web y servicios del núcleo IoT          |
+| 🧠 **Plataformas**                 | Raspberry Pi, Arduino y navegador web             |
 
 ---
 

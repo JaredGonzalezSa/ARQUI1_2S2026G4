@@ -179,24 +179,6 @@ class SensorManager:
             'luz': self.leer_luz()
         }
     
-    def generar_archivo_arm64(self, cantidad=20):
-        ruta = "datos.txt"
-        lecturas = []
-        try:
-            with open(ruta, "w") as f:
-                for i in range(cantidad):
-                    temp = self.leer_temperatura()
-                    f.write(f"{temp}\n")
-                    lecturas.append(temp)
-                    if i < cantidad - 1:
-                        time.sleep(0.05)
-                f.write("$\n")
-            print(f"[ARM64] datos.txt generado con {cantidad} lecturas")
-            return lecturas
-        except Exception as e:
-            print(f"[ARM64] Error: {e}")
-            return None
-    
     def __del__(self):
         self.serial_thread_activo = False
         if self.serial_conexion and self.serial_conexion.is_open:

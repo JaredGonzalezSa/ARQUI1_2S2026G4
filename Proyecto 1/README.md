@@ -1,170 +1,145 @@
-# Edificio Inteligente IoT con Raspberry Pi ARM64
+# AulaNexo
 
-<div align="center">
+Sistema IoT para seguridad ambiental, confort, acceso e iluminación eficiente en aulas y laboratorios.
 
-![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
-![ARM64](https://img.shields.io/badge/Ensamblador-AArch64-8A2BE2)
-![MQTT](https://img.shields.io/badge/MQTT-EMQX-660066?logo=mqtt&logoColor=white)
-![MongoDB](https://img.shields.io/badge/Base%20de%20datos-MongoDB%20Atlas-47A248?logo=mongodb&logoColor=white)
-![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-yellow)
+## Propuesta renovada
 
-</div>
+AulaNexo adapta el prototipo de edificio inteligente a una necesidad concreta: administrar espacios educativos que suelen operar sin información ambiental, alertas tempranas ni automatización accesible. La solución conserva el hardware y el cableado original, pero reorganiza la experiencia alrededor de docentes, estudiantes, encargados de laboratorio y administradores.
 
-## Acerca del proyecto
+La Raspberry Pi coordina sensores y actuadores, recibe gas y luz desde Arduino por USB serial, publica datos mediante MQTT, almacena historial en MongoDB Atlas y permite supervisión y control desde un dashboard Flask. El sistema funciona con Python y servicios multiplataforma, sin binarios específicos del procesador.
 
-Esta carpeta contiene la implementación del Proyecto 1: Edificio Inteligente IoT con Raspberry Pi ARM64. El sistema integra hardware, software y procesamiento de bajo nivel para controlar y monitorear una maqueta de un edificio inteligente.
+## Problemas que atiende
 
-La solución utiliza una Raspberry Pi con Linux de 64 bits como plataforma principal, Python para la lógica del sistema, MQTT con EMQX para la comunicación entre módulos, MongoDB Atlas para la persistencia de información, un dashboard web con Flask para supervisión y control remoto, y un módulo desarrollado en ensamblador AArch64 para procesar lecturas reales de temperatura.
+1. Temperatura elevada durante clases o prácticas.
+2. Humedad fuera del rango de confort.
+3. Presencia de gas o humo sin alerta temprana.
+4. Iluminación encendida cuando no se necesita.
+5. Espacios oscuros cuando inicia una actividad.
+6. Acceso poco práctico cuando una persona se aproxima.
+7. Falta de una vista central del estado del aula.
+8. Respuesta tardía ante condiciones de emergencia.
+9. Ausencia de historial para justificar mejoras.
+10. Dependencia de controles exclusivamente presenciales.
 
----
+## Mercado objetivo
 
-## Objetivos
+- Centros educativos con aulas, talleres o laboratorios.
+- Academias y centros de capacitación.
+- Administradores de espacios de estudio compartidos.
+- Instituciones que necesitan un prototipo demostrativo y ampliable antes de una instalación mayor.
 
-- Monitorear en tiempo real temperatura, humedad, gas o humo, distancia y nivel de luz.
-- Automatizar la respuesta de ventilación, iluminación, acceso y alarma según las condiciones detectadas.
-- Mantener un estado global del edificio: NORMAL, ADVERTENCIA o EMERGENCIA.
-- Comunicar lecturas, estados y comandos mediante MQTT.
-- Almacenar lecturas, eventos, comandos, estados y resultados en MongoDB Atlas.
-- Permitir supervisión y control remoto desde un dashboard web.
-- Procesar lecturas reales con un módulo en ensamblador ARM64, calculando máximo, mínimo, promedio entero y cantidad de datos.
+## Propuesta de valor
 
----
+AulaNexo integra monitoreo, automatización y control remoto en un prototipo reutilizable. Un solo sistema muestra temperatura, humedad, gas, luz y proximidad, y responde mediante ventilación, iluminación, alarma y apertura de puerta. La institución puede probar la solución a pequeña escala antes de decidir una implementación por aula.
 
-## Funcionalidades principales
+## Funciones principales
 
-| Subsistema                    | Funcionalidad                                                                                                                          |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| 🌡️ **Monitoreo ambiental**     | Lectura de temperatura y humedad mediante DHT11, control automático del ventilador y generación de advertencias.                       |
-| 🚨 **Detección de gas/humo**   | Monitoreo del nivel de gas, activación de buzzer y LED de emergencia, apertura automática de la puerta y cambio a estado `EMERGENCIA`. |
-| 🚪 **Acceso automatizado**     | Medición de distancia con HC-SR04 y control de puerta mediante servomotor, botón físico o dashboard.                                   |
-| 💡 **Iluminación inteligente** | Control de tres zonas de iluminación con modos `AUTOMÁTICO` y `MANUAL`.                                                                |
-| 🚦 **Estado global**           | Estados `NORMAL`, `ADVERTENCIA` y `EMERGENCIA`, representados mediante LEDs y publicados por MQTT.                                     |
-| 🎛️ **Panel físico**            | LCD y cuatro botones para puerta, modo de iluminación, silenciar alarma y restablecer alerta.                                          |
-| 🌐 **Dashboard web**           | Visualización en tiempo real, gráficas históricas, estado de actuadores, controles remotos, eventos y resultados ARM64.                |
-| 🧠 **Procesamiento ARM64**     | Generación de `datos.txt`, ejecución del programa AArch64 y lectura de `resultado.txt` con estadísticas.                               |
+| Área | Función |
+| --- | --- |
+| Ambiente | Lee temperatura y humedad con DHT11 y controla la ventilación. |
+| Seguridad | Detecta gas o humo, activa alarma, señaliza el estado y abre la puerta durante una emergencia. |
+| Acceso | Usa el HC-SR04 y el servomotor para apertura por proximidad o por orden manual. |
+| Iluminación | Controla tres zonas en modo automático o manual. |
+| Supervisión | Publica lecturas y estados por MQTT, conserva historial y muestra un dashboard web. |
+| Operación local | Ofrece LCD y cuatro botones para acciones esenciales sin depender del navegador. |
+| Registro académico | Permite registrar estudiantes por nombre y carné desde el dashboard. |
+| Optimización de compras | Compara Esquina Noroeste, Costo Mínimo, Vogel y una solución óptima para distribuir compras. |
 
----
-
-## Estructura del proyecto
+## Arquitectura
 
 ```text
-/
-├── 📁 backend/                         # Backend web y comunicación con el dashboard
-│   ├── app.py                         # Servidor Flask, API HTTP y cliente MQTT
-│   ├── mongo.py                       # Acceso y operaciones sobre MongoDB Atlas
-│   ├── requirements.txt               # Dependencias del backend
-│   ├── 📁 static/
-│   │   └── 📁 img/                    # Recursos gráficos del dashboard
-│   │       ├── 📁 control/            # Iconos de controles y actuadores
-│   │       └── 📁 sensores/           # Iconos de sensores
-│   └── 📁 templates/
-│       └── index.html                 # Interfaz web, estilos y lógica del dashboard
-│
-├── 📁 iot/                             # Software ejecutado en la Raspberry Pi
-│   ├── main.py                        # Punto de entrada y ciclo principal del sistema IoT
-│   ├── globals.py                     # Pines GPIO, MQTT, umbrales, tiempos y configuración
-│   ├── arm64_integracion.py           # Integración entre Python y el módulo ARM64
-│   ├── arm64_stats.s                  # Código fuente del módulo en AArch64
-│   ├── arm64_stats                    # Binario ejecutable del módulo ARM64
-│   ├── limpiar_retain.py              # Limpieza de mensajes retenidos en MQTT
-│   ├── test.py                        # Prueba rápida de los botones físicos
-│   ├── requirements.txt               # Dependencias del núcleo IoT
-│   └── 📁 core/
-│       ├── __init__.py
-│       ├── sensores.py                # Lectura y administración de sensores
-│       └── actuadores.py              # Control de actuadores, LCD y botones
-│
-├── 📁 scripts/                         # Pruebas aisladas de hardware y servicios
-│   ├── lcd_test.py                    # Prueba de comunicación con la pantalla LCD
-│   ├── leds_test.py                   # Prueba secuencial de LEDs de iluminación
-│   ├── test_buzzer.py                 # Prueba del buzzer
-│   ├── test_dht11.py                  # Prueba del sensor DHT11
-│   ├── test_leds.py                   # Prueba interactiva de LEDs de estado e iluminación
-│   ├── test_mongo.py                  # Prueba de conexión y escritura en MongoDB Atlas
-│   ├── test_mqtt_pub.py               # Prueba de publicación MQTT
-│   └── test_mqtt_sub.py               # Prueba de suscripción MQTT
-│
-├── 📁 docs/
-│   └── manual-tecnico.md              # Documentación técnica completa del sistema
-│
-├── .gitignore                         # Archivos y directorios excluidos del repositorio
-└── README.md                          # Descripción general, configuración y acceso a la documentación
+DHT11 + HC-SR04 ─┐
+Arduino (gas/luz) ├─> Raspberry Pi + Python ─> actuadores y LCD
+Botones físicos ──┘             │
+                                ├─> MQTT/EMQX ─> Flask/dashboard
+                                └─> MongoDB Atlas
 ```
 
----
+El navegador nunca accede directamente a GPIO. Los comandos siguen la ruta navegador, Flask, MQTT y Raspberry Pi.
 
-## Tecnologías y herramientas
+El módulo administrativo utiliza `GET /api/estudiantes` y `POST /api/estudiantes`. Los registros se almacenan en la colección `students` de MongoDB Atlas y el carné se protege con un índice único.
 
-| Categoría           | Tecnologías                                                                                           |
-| ------------------- | ----------------------------------------------------------------------------------------------------- |
-| 💻 **Lenguajes**     | Python 3, Ensamblador AArch64                                                                         |
-| ⚙️ **Backend web**   | Flask                                                                                                 |
-| 🎨 **Frontend web**  | HTML, CSS, JavaScript                                                                                 |
-| 📡 **Comunicación**  | MQTT, EMQX                                                                                            |
-| 🗄️ **Base de datos** | MongoDB Atlas                                                                                         |
-| 🔧 **Hardware**      | Raspberry Pi, DHT11, HC-SR04, sensor de gas, LDR, servomotor, buzzer, ventilador, LCD, LEDs y botones |
+El módulo **Costo mínimo** recibe proveedores, productos o destinos, costos unitarios, oferta y demanda. `POST /api/optimizacion/transporte` permite ejecutar un método o comparar los cuatro. Si la oferta total difiere de la demanda, el backend agrega automáticamente una fila o columna ficticia de costo cero. Los cálculos no se almacenan ni interactúan con MQTT o GPIO.
 
+## Conexiones físicas preservadas
 
----
+No se cambió ningún pin, dirección I2C ni puerto serial del proyecto base.
 
-## Configuración básica
+| Componente | Configuración original |
+| --- | --- |
+| DHT11 | GPIO5, pin físico 29 |
+| HC-SR04 TRIG | GPIO17, pin físico 11 |
+| HC-SR04 ECHO | GPIO27, pin físico 13 |
+| Servomotor | GPIO18, pin físico 12 |
+| Relé de ventilador | GPIO11, pin físico 23 |
+| LEDs de iluminación | GPIO6, GPIO12 y GPIO13 |
+| LEDs de estado | GPIO16, GPIO20 y GPIO21 |
+| LED de puerta | GPIO10 |
+| LED de ventilación | GPIO9 |
+| Buzzer | GPIO26, pin físico 37 |
+| Botones | GPIO22, GPIO23, GPIO24 y GPIO25 |
+| LCD | I2C `0x27`, 16 x 2 |
+| Arduino | `/dev/ttyUSB0` por USB serial |
 
-### 1. Clonar el repositorio
+La fuente de verdad para estos valores permanece en [`iot/globals.py`](iot/globals.py).
+
+## Estructura
+
+```text
+Proyecto 1/
+├── backend/
+│   ├── app.py
+│   ├── mongo.py
+│   ├── transport.py
+│   ├── requirements.txt
+│   ├── static/
+│   └── templates/index.html
+├── docs/
+│   ├── manual-tecnico.md
+│   ├── propuesta-fase-1.md
+│   └── img/
+├── iot/
+│   ├── core/actuadores.py
+│   ├── core/sensores.py
+│   ├── globals.py
+│   ├── limpiar_retain.py
+│   ├── main.py
+│   └── requirements.txt
+└── scripts/
+```
+
+## Puesta en marcha
+
+### Backend
 
 ```bash
-git clone https://github.com/JaredGonzalezSa/ARQUI1_2S2026G4
-cd ARQUI1_2S2026G4
-```
-
-### 2. Crear la variable de entorno de MongoDB
-
-Crear un archivo `.env` con:
-
-```env
-MONGO_URI=<CADENA_DE_CONEXION_MONGODB_ATLAS>
-```
-
-### 3. Ejecutar el dashboard
-
-```bash
-cd backend
+cd "Proyecto 1/backend"
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python3 app.py
 ```
 
-El servidor Flask se inicia en:
+El dashboard queda disponible en `http://localhost:5000`.
 
-```text
-http://localhost:5000
-```
-
-### 4. Preparar el entorno IoT en Raspberry Pi
+### Núcleo IoT
 
 ```bash
-cd iot
+cd "Proyecto 1/iot"
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python3 main.py
 ```
 
-El núcleo IoT se ejecuta sobre la Raspberry Pi con acceso a los sensores, actuadores, GPIO y puerto serial configurados para la maqueta.
+Se necesita una variable `MONGO_URI` válida y acceso al broker MQTT configurado en `iot/globals.py`.
 
-## Documentación
+## Entregables de Fase 1
 
-La documentación técnica completa del sistema se encuentra en:
+- [Propuesta desarrollada](docs/propuesta-fase-1.md)
+- Presentación de cinco diapositivas en `docs/fase-1-aulanexo.pptx`
+- Logotipo en `docs/img/aulanexo-logo.png`
 
-- [Manual técnico](docs/manual-tecnico.md)
+## Alcance técnico
 
-El manual explica la arquitectura implementada, los subsistemas, el flujo MQTT, el modelo de datos en MongoDB Atlas, el backend/dashboard, la puesta en marcha y el funcionamiento del módulo ARM64. Los diagramas se manejan como entregables separados.
-
-- [Diagrama de arquitectura](docs/diagrama-arquitectura.svg)
-
-El diagrama de arquitectura muestra la organización general del sistema y la interacción entre la Raspberry Pi, los sensores y actuadores, el broker MQTT, MongoDB Atlas, el dashboard web y el módulo de procesamiento ARM64.
-
-- [Diagrama de conexiones y flujo](docs/diagrama-conexiones-flujo.png)
-
-El diagrama de conexiones y flujo representa las conexiones entre los componentes físicos del edificio inteligente y el recorrido de la información dentro del sistema, incluyendo la adquisición de datos, comunicación mediante MQTT, almacenamiento en MongoDB, control desde el dashboard y el flujo de procesamiento Python -> datos.txt -> ARM64 -> resultado.txt -> Python -> MongoDB Atlas -> Dashboard.
-
-- [Evidencias de funcionamiento](docs/img/)
+La migración retiró el módulo de procesamiento específico del proyecto anterior, sus archivos intermedios, tema MQTT, colección de resultados, parser, vistas y gráficas asociadas. Sensores, actuadores, automatización, MQTT, MongoDB y dashboard continúan como subsistemas independientes. El registro de estudiantes y la optimización de compras se añadieron como funciones administrativas separadas y no modifican el control físico.

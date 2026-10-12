@@ -39,11 +39,6 @@ INTERVALO_LECTURA = 0.5   # 500ms entre lecturas
 PUERTO_SERIAL = "/dev/ttyUSB0"
 
 # ==========================================
-# RUTA DEL BINARIO ARM64
-# ==========================================
-ARM64_BIN_PATH = "./arm64_stats"
-
-# ==========================================
 # PINES GPIO (Raspberry Pi)
 # ==========================================
 

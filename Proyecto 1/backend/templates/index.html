@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proyecto 1 | Edificio Inteligente IoT</title>
+    <title>AulaNexo | Monitoreo inteligente</title>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -326,9 +326,8 @@
             border-radius: 50%;
         }
 
-        /* Actuadores y resultados ARM64 */
-        .principal-actuator-grid,
-        .principal-arm-grid {
+        /* Actuadores */
+        .principal-actuator-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px;
@@ -339,8 +338,7 @@
             padding: 17px 18px;
         }
 
-        .actuator-title,
-        .arm-label {
+        .actuator-title {
             color: var(--muted);
             font-size: 12px;
             font-weight: 750;
@@ -350,17 +348,6 @@
             margin-top: 13px;
             font-size: 19px;
             font-weight: 800;
-        }
-
-        .arm-card {
-            min-height: 100px;
-            padding: 17px 18px;
-        }
-
-        .arm-value {
-            margin-top: 12px;
-            font-size: 26px;
-            font-weight: 900;
         }
 
         /* =====================================================
@@ -553,6 +540,284 @@
         }
 
         /* =====================================================
+           REGISTRO DE ESTUDIANTES
+        ===================================================== */
+        .students-layout {
+            display: grid;
+            grid-template-columns: minmax(280px, 380px) 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .student-form-card,
+        .student-list-card {
+            padding: 22px;
+        }
+
+        .student-form {
+            display: grid;
+            gap: 16px;
+        }
+
+        .form-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .form-field label {
+            color: #334155;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .form-field input {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+
+            background: white;
+            color: var(--text);
+            border: 1px solid #cfd8e3;
+            border-radius: 10px;
+            outline: none;
+            font: inherit;
+        }
+
+        .form-field input:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px var(--orange-soft);
+        }
+
+        .student-submit {
+            background: var(--orange);
+            color: white;
+        }
+
+        .student-form-message {
+            min-height: 20px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .student-form-message.success {
+            color: var(--green);
+        }
+
+        .student-form-message.error {
+            color: var(--red);
+        }
+
+        .student-list-header {
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .student-list-title {
+            font-size: 16px;
+            font-weight: 850;
+        }
+
+        .student-count {
+            margin-left: 6px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .student-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .student-item {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: var(--surface-soft);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+        }
+
+        .student-name {
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .student-date {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .student-id {
+            padding: 7px 10px;
+            background: #e6f5f3;
+            color: #08756f;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 850;
+            white-space: nowrap;
+        }
+
+        /* =====================================================
+           OPTIMIZACION DE COMPRAS
+        ===================================================== */
+        .optimization-layout {
+            display: grid;
+            gap: 18px;
+        }
+
+        .optimization-panel,
+        .optimization-result {
+            padding: 22px;
+        }
+
+        .optimization-note {
+            padding: 14px 16px;
+            background: #fff7ed;
+            color: #9a3412;
+            border: 1px solid #fed7aa;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .optimization-toolbar {
+            margin: 18px 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 12px;
+        }
+
+        .optimization-toolbar .form-field {
+            min-width: 150px;
+            flex: 1;
+        }
+
+        .optimization-toolbar select,
+        .optimization-toolbar input,
+        .transport-table input {
+            width: 100%;
+            min-height: 42px;
+            padding: 8px 10px;
+            background: white;
+            color: var(--text);
+            border: 1px solid #cfd8e3;
+            border-radius: 9px;
+            outline: none;
+            font: inherit;
+        }
+
+        .optimization-toolbar select:focus,
+        .optimization-toolbar input:focus,
+        .transport-table input:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px var(--orange-soft);
+        }
+
+        .transport-scroll {
+            overflow-x: auto;
+        }
+
+        .transport-table {
+            width: 100%;
+            min-width: 700px;
+            border-collapse: separate;
+            border-spacing: 6px;
+        }
+
+        .transport-table th {
+            color: #475569;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .transport-table td {
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .transport-table .name-cell {
+            min-width: 170px;
+        }
+
+        .transport-table .allocation-cell {
+            padding: 11px;
+            background: var(--surface-soft);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            font-weight: 800;
+        }
+
+        .optimization-actions {
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .optimization-primary {
+            background: var(--orange);
+            color: white;
+        }
+
+        .optimization-message {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .optimization-message.error {
+            color: var(--red);
+        }
+
+        .result-summary {
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .result-chip {
+            padding: 9px 12px;
+            background: #e6f5f3;
+            color: #08756f;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .comparison-table {
+            width: 100%;
+            margin-bottom: 18px;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 11px 12px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .calculation-steps {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .calculation-steps li {
+            margin: 6px 0;
+        }
+
+        /* =====================================================
            HISTORIAL
         ===================================================== */
         #view-historial.active {
@@ -663,7 +928,7 @@
 
             .nav-list {
                 display: grid;
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
 
             .nav-button {
@@ -690,6 +955,10 @@
             }
 
             .history-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .students-layout {
                 grid-template-columns: 1fr;
             }
         }
@@ -756,7 +1025,7 @@
 
         <div class="project-title">
             <strong>PROYECTO 1</strong>
-            <span>Edificio Inteligente IoT</span>
+            <span>AulaNexo</span>
         </div>
     </header>
 
@@ -773,6 +1042,14 @@
 
             <button class="nav-button" data-view="control" onclick="cambiarVista('control')">
                 Control remoto
+            </button>
+
+            <button class="nav-button" data-view="optimizacion" onclick="cambiarVista('optimizacion')">
+                Costo m&iacute;nimo
+            </button>
+
+            <button class="nav-button" data-view="estudiantes" onclick="cambiarVista('estudiantes')">
+                Estudiantes
             </button>
 
             <button class="nav-button" data-view="historial" onclick="cambiarVista('historial')">
@@ -897,29 +1174,6 @@
                 </div>
             </div>
 
-            <div class="principal-section-title">Resultados ARM64</div>
-
-            <div class="principal-arm-grid">
-                <div class="card arm-card">
-                    <div class="arm-label">MIN</div>
-                    <div id="min" class="arm-value">0</div>
-                </div>
-
-                <div class="card arm-card">
-                    <div class="arm-label">MAX</div>
-                    <div id="max" class="arm-value">0</div>
-                </div>
-
-                <div class="card arm-card">
-                    <div class="arm-label">PROMEDIO</div>
-                    <div id="avg" class="arm-value">0</div>
-                </div>
-
-                <div class="card arm-card">
-                    <div class="arm-label">CONTADOR</div>
-                    <div id="count" class="arm-value">0</div>
-                </div>
-            </div>
         </section>
 
         <!-- =====================================================
@@ -972,13 +1226,6 @@
                     <div class="chart-wrap"><canvas id="graficaLuz"></canvas></div>
                 </div>
 
-                <div class="card chart-card">
-                    <div class="chart-header">
-                        <div class="chart-title">Promedio de temperatura según ARM64</div>
-                        <div class="chart-unit">°C</div>
-                    </div>
-                    <div class="chart-wrap"><canvas id="graficaArm64"></canvas></div>
-                </div>
             </div>
         </section>
 
@@ -1091,12 +1338,119 @@
         </section>
 
         <!-- =====================================================
+             OPTIMIZACION DE COMPRAS
+        ====================================================== -->
+        <section id="view-optimizacion" class="view">
+            <div class="page-heading">
+                <h1>M&oacute;dulo de costo m&iacute;nimo</h1>
+                <p>Distribuye compras entre proveedores y destinos respetando oferta y demanda.</p>
+            </div>
+
+            <div class="optimization-layout">
+                <div class="card optimization-panel">
+                    <div class="optimization-note">
+                        Esquina Noroeste, Costo M&iacute;nimo y Vogel generan soluciones factibles.
+                        La opci&oacute;n &Oacute;ptimo calcula el menor costo total mediante flujo de costo m&iacute;nimo.
+                    </div>
+
+                    <div class="optimization-toolbar">
+                        <div class="form-field">
+                            <label for="cantidadProveedores">Proveedores</label>
+                            <input id="cantidadProveedores" type="number" min="2" max="6" value="3">
+                        </div>
+                        <div class="form-field">
+                            <label for="cantidadDestinos">Productos o destinos</label>
+                            <input id="cantidadDestinos" type="number" min="2" max="6" value="3">
+                        </div>
+                        <div class="form-field">
+                            <label for="metodoTransporte">M&eacute;todo</label>
+                            <select id="metodoTransporte">
+                                <option value="comparar">Comparar todos</option>
+                                <option value="noroeste">Esquina Noroeste</option>
+                                <option value="costo_minimo">Costo M&iacute;nimo</option>
+                                <option value="vogel">Aproximaci&oacute;n de Vogel</option>
+                                <option value="optimo">&Oacute;ptimo exacto</option>
+                            </select>
+                        </div>
+                        <button class="action-btn" type="button" onclick="generarTablaTransporte()">Aplicar tama&ntilde;o</button>
+                        <button class="action-btn" type="button" onclick="cargarEjemploTransporte()">Cargar ejemplo</button>
+                    </div>
+
+                    <div id="matrizTransporte" class="transport-scroll"></div>
+
+                    <div class="optimization-actions">
+                        <button id="btnCalcularTransporte" class="action-btn optimization-primary" type="button"
+                                onclick="calcularTransporte()">Calcular distribuci&oacute;n</button>
+                        <span id="mensajeTransporte" class="optimization-message" aria-live="polite"></span>
+                    </div>
+                </div>
+
+                <div id="resultadoTransporte" class="card optimization-result" hidden></div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             REGISTRO DE ESTUDIANTES
+        ====================================================== -->
+        <section id="view-estudiantes" class="view">
+            <div class="page-heading">
+                <h1>Registro de estudiantes</h1>
+                <p>Administración de estudiantes almacenados en MongoDB Atlas.</p>
+            </div>
+
+            <div class="students-layout">
+                <div class="card student-form-card">
+                    <form id="formEstudiante" class="student-form">
+                        <div class="form-field">
+                            <label for="nombreEstudiante">Nombre completo</label>
+                            <input id="nombreEstudiante" name="nombre" type="text"
+                                   minlength="2" maxlength="100" required
+                                   autocomplete="name"
+                                   placeholder="Ej. Ana López">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="carnetEstudiante">Carné</label>
+                            <input id="carnetEstudiante" name="carnet" type="text"
+                                   minlength="4" maxlength="20" required
+                                   pattern="[A-Za-z0-9-]+"
+                                   autocomplete="off"
+                                   placeholder="Ej. 202500177">
+                        </div>
+
+                        <button id="btnRegistrarEstudiante" class="action-btn student-submit" type="submit">
+                            Registrar estudiante
+                        </button>
+
+                        <div id="mensajeEstudiante" class="student-form-message" aria-live="polite"></div>
+                    </form>
+                </div>
+
+                <div class="card student-list-card">
+                    <div class="student-list-header">
+                        <div class="student-list-title">
+                            Estudiantes registrados
+                            <span id="cantidadEstudiantes" class="student-count">0</span>
+                        </div>
+                        <button class="action-btn" type="button" onclick="cargarEstudiantes()">
+                            ↻ Actualizar
+                        </button>
+                    </div>
+
+                    <div id="listaEstudiantes" class="student-list">
+                        <div class="empty-state">Cargando estudiantes...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
              HISTORIAL
         ====================================================== -->
         <section id="view-historial" class="view">
             <div class="page-heading">
                 <h1>Historial del sistema</h1>
-                <p>Eventos, comandos remotos y resultados ARM64 almacenados en MongoDB.</p>
+                <p>Eventos y comandos remotos almacenados en MongoDB.</p>
 
                 <button class="action-btn" onclick="cargarHistorial()">↻ Actualizar</button>
             </div>
@@ -1116,12 +1470,6 @@
                     </div>
                 </div>
 
-                <div class="card history-card">
-                    <div class="history-header">Últimos resultados ARM64</div>
-                    <div id="listaArm64" class="history-list">
-                        <div class="empty-state">Sin resultados registrados.</div>
-                    </div>
-                </div>
             </div>
         </section>
     </main>
@@ -1181,14 +1529,17 @@
                     graficaHumedad,
                     graficaGas,
                     graficaDistancia,
-                    graficaLuz,
-                    graficaArm64
+                    graficaLuz
                 ].forEach(grafica => grafica.resize());
             }, 80);
         }
 
         if (nombre === "historial") {
             cargarHistorial();
+        }
+
+        if (nombre === "estudiantes") {
+            cargarEstudiantes();
         }
     }
 
@@ -1272,7 +1623,6 @@
     const graficaGas = crearGrafica("graficaGas", "Gas");
     const graficaDistancia = crearGrafica("graficaDistancia", "Distancia");
     const graficaLuz = crearGrafica("graficaLuz", "Nivel de luz");
-    const graficaArm64 = crearGrafica("graficaArm64", "Promedio ARM64");
 
     function agregarDato(grafica, etiqueta, valor) {
         const numero = Number(valor);
@@ -1438,7 +1788,6 @@
     ========================================================= */
 
     let ultimoCiclo = -1;
-    let ultimoArm64 = "";
     let datosHistorialCargados = false;
     let ultimoModoIluminacion = "---";
 
@@ -1505,12 +1854,6 @@
             ponerTexto("mensajeEstado", infoEstado.mensaje);
             elemento("estadoGlobalPrincipal").style.color = infoEstado.color;
 
-            // ARM64
-            ponerTexto("min", datos.arm64.min);
-            ponerTexto("max", datos.arm64.max);
-            ponerTexto("avg", datos.arm64.avg);
-            ponerTexto("count", datos.arm64.count);
-
             // ==========================================
             // ACTUALIZAR GRÁFICAS CON DATOS MQTT
             // ==========================================
@@ -1529,20 +1872,6 @@
                 agregarDato(graficaGas, hora, datos.gas);
                 agregarDato(graficaDistancia, hora, datos.distancia);
                 agregarDato(graficaLuz, hora, datos.luz);
-            }
-
-            // ARM64
-            const resultadoArm64 = JSON.stringify(datos.arm64);
-            if (resultadoArm64 !== ultimoArm64 && !datosHistorialCargados) {
-                ultimoArm64 = resultadoArm64;
-                if (Number(datos.arm64.count) > 0) {
-                    const hora = new Date().toLocaleTimeString("es-GT", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit"
-                    });
-                    agregarDato(graficaArm64, hora, datos.arm64.avg);
-                }
             }
 
         } catch (error) {
@@ -1683,6 +2012,426 @@
     }
 
     /* =========================================================
+       OPTIMIZACION DE COMPRAS
+    ========================================================= */
+
+    function limitarDimension(valor) {
+        return Math.max(2, Math.min(6, Number.parseInt(valor, 10) || 3));
+    }
+
+    function crearEntradaTransporte(id, valor, tipo = "number") {
+        const entrada = document.createElement("input");
+        entrada.id = id;
+        entrada.type = tipo;
+        entrada.value = valor;
+
+        if (tipo === "number") {
+            entrada.min = "0";
+            entrada.step = "1";
+            entrada.required = true;
+        }
+
+        return entrada;
+    }
+
+    function generarTablaTransporte(modelo = null) {
+        const filas = limitarDimension(modelo ? modelo.oferta.length : elemento("cantidadProveedores").value);
+        const columnas = limitarDimension(modelo ? modelo.demanda.length : elemento("cantidadDestinos").value);
+        elemento("cantidadProveedores").value = filas;
+        elemento("cantidadDestinos").value = columnas;
+
+        const tabla = document.createElement("table");
+        tabla.className = "transport-table";
+        const cabecera = document.createElement("thead");
+        const filaCabecera = document.createElement("tr");
+        const esquina = document.createElement("th");
+        esquina.textContent = "Proveedor / destino";
+        filaCabecera.appendChild(esquina);
+
+        for (let columna = 0; columna < columnas; columna += 1) {
+            const celda = document.createElement("th");
+            celda.appendChild(crearEntradaTransporte(
+                `destino-nombre-${columna}`,
+                modelo?.destinos[columna] || `Destino ${columna + 1}`,
+                "text"
+            ));
+            filaCabecera.appendChild(celda);
+        }
+
+        const ofertaTitulo = document.createElement("th");
+        ofertaTitulo.textContent = "Oferta";
+        filaCabecera.appendChild(ofertaTitulo);
+        cabecera.appendChild(filaCabecera);
+        tabla.appendChild(cabecera);
+
+        const cuerpo = document.createElement("tbody");
+
+        for (let fila = 0; fila < filas; fila += 1) {
+            const filaTabla = document.createElement("tr");
+            const nombre = document.createElement("td");
+            nombre.className = "name-cell";
+            nombre.appendChild(crearEntradaTransporte(
+                `proveedor-nombre-${fila}`,
+                modelo?.proveedores[fila] || `Proveedor ${fila + 1}`,
+                "text"
+            ));
+            filaTabla.appendChild(nombre);
+
+            for (let columna = 0; columna < columnas; columna += 1) {
+                const costo = document.createElement("td");
+                const entradaCosto = crearEntradaTransporte(
+                    `costo-${fila}-${columna}`,
+                    modelo?.costos[fila][columna] ?? 0
+                );
+                entradaCosto.step = "0.01";
+                entradaCosto.title = "Costo unitario";
+                costo.appendChild(entradaCosto);
+                filaTabla.appendChild(costo);
+            }
+
+            const oferta = document.createElement("td");
+            oferta.appendChild(crearEntradaTransporte(
+                `oferta-${fila}`,
+                modelo?.oferta[fila] ?? 0
+            ));
+            filaTabla.appendChild(oferta);
+            cuerpo.appendChild(filaTabla);
+        }
+
+        const filaDemanda = document.createElement("tr");
+        const tituloDemanda = document.createElement("th");
+        tituloDemanda.textContent = "Demanda";
+        filaDemanda.appendChild(tituloDemanda);
+
+        for (let columna = 0; columna < columnas; columna += 1) {
+            const demanda = document.createElement("td");
+            demanda.appendChild(crearEntradaTransporte(
+                `demanda-${columna}`,
+                modelo?.demanda[columna] ?? 0
+            ));
+            filaDemanda.appendChild(demanda);
+        }
+
+        filaDemanda.appendChild(document.createElement("td"));
+        cuerpo.appendChild(filaDemanda);
+        tabla.appendChild(cuerpo);
+
+        const contenedor = elemento("matrizTransporte");
+        contenedor.replaceChildren(tabla);
+        elemento("resultadoTransporte").hidden = true;
+        elemento("mensajeTransporte").textContent = "";
+    }
+
+    function cargarEjemploTransporte() {
+        generarTablaTransporte({
+            proveedores: ["Proveedor Norte", "Proveedor Centro", "Proveedor Sur"],
+            destinos: ["Cuadernos", "Marcadores", "Papel"],
+            costos: [[4, 8, 8], [2, 5, 7], [6, 4, 3]],
+            oferta: [80, 100, 120],
+            demanda: [90, 110, 100]
+        });
+    }
+
+    function recogerModeloTransporte() {
+        const filas = document.querySelectorAll('[id^="oferta-"]').length;
+        const columnas = document.querySelectorAll('[id^="demanda-"]').length;
+        const leerNumero = id => Number(elemento(id).value);
+
+        return {
+            metodo: elemento("metodoTransporte").value,
+            proveedores: Array.from({ length: filas }, (_, fila) =>
+                elemento(`proveedor-nombre-${fila}`).value.trim() || `Proveedor ${fila + 1}`
+            ),
+            destinos: Array.from({ length: columnas }, (_, columna) =>
+                elemento(`destino-nombre-${columna}`).value.trim() || `Destino ${columna + 1}`
+            ),
+            costos: Array.from({ length: filas }, (_, fila) =>
+                Array.from({ length: columnas }, (_, columna) => leerNumero(`costo-${fila}-${columna}`))
+            ),
+            oferta: Array.from({ length: filas }, (_, fila) => leerNumero(`oferta-${fila}`)),
+            demanda: Array.from({ length: columnas }, (_, columna) => leerNumero(`demanda-${columna}`))
+        };
+    }
+
+    function crearTablaAsignacion(resultado) {
+        const desplazable = document.createElement("div");
+        desplazable.className = "transport-scroll";
+        const tabla = document.createElement("table");
+        tabla.className = "transport-table";
+        const cabecera = document.createElement("tr");
+        ["Proveedor", ...resultado.destinos, "Oferta"].forEach(texto => {
+            const celda = document.createElement("th");
+            celda.textContent = texto;
+            cabecera.appendChild(celda);
+        });
+        const thead = document.createElement("thead");
+        thead.appendChild(cabecera);
+        tabla.appendChild(thead);
+        const cuerpo = document.createElement("tbody");
+
+        resultado.proveedores.forEach((proveedor, fila) => {
+            const renglon = document.createElement("tr");
+            const nombre = document.createElement("th");
+            nombre.textContent = proveedor;
+            renglon.appendChild(nombre);
+
+            resultado.matriz_asignacion[fila].forEach((cantidad, columna) => {
+                const celda = document.createElement("td");
+                celda.className = "allocation-cell";
+                celda.textContent = `${cantidad} × ${Number(resultado.costos[fila][columna]).toLocaleString("es-GT")}`;
+                celda.title = "Cantidad asignada × costo unitario";
+                renglon.appendChild(celda);
+            });
+
+            const oferta = document.createElement("td");
+            oferta.textContent = resultado.oferta[fila];
+            renglon.appendChild(oferta);
+            cuerpo.appendChild(renglon);
+        });
+
+        const demanda = document.createElement("tr");
+        const etiqueta = document.createElement("th");
+        etiqueta.textContent = "Demanda";
+        demanda.appendChild(etiqueta);
+        resultado.demanda.forEach(valor => {
+            const celda = document.createElement("td");
+            celda.textContent = valor;
+            demanda.appendChild(celda);
+        });
+        demanda.appendChild(document.createElement("td"));
+        cuerpo.appendChild(demanda);
+        tabla.appendChild(cuerpo);
+        desplazable.appendChild(tabla);
+        return desplazable;
+    }
+
+    function mostrarResultadoIndividual(resultado, contenedor, limpiar = true) {
+        if (limpiar) {
+            contenedor.replaceChildren();
+        }
+
+        const resumen = document.createElement("div");
+        resumen.className = "result-summary";
+        [
+            resultado.metodo_nombre,
+            `Costo total: ${Number(resultado.costo_total).toLocaleString("es-GT", { maximumFractionDigits: 4 })}`,
+            resultado.es_optimo ? "Solución óptima" : "Solución inicial factible"
+        ].forEach(texto => {
+            const chip = document.createElement("span");
+            chip.className = "result-chip";
+            chip.textContent = texto;
+            resumen.appendChild(chip);
+        });
+        contenedor.appendChild(resumen);
+
+        const balance = document.createElement("p");
+        balance.className = "optimization-message";
+        balance.textContent = resultado.balance;
+        contenedor.appendChild(balance);
+        contenedor.appendChild(crearTablaAsignacion(resultado));
+
+        const detalle = document.createElement("details");
+        detalle.className = "calculation-steps";
+        const titulo = document.createElement("summary");
+        titulo.textContent = `Ver procedimiento (${resultado.pasos.length} pasos)`;
+        detalle.appendChild(titulo);
+        const lista = document.createElement("ol");
+        resultado.pasos.forEach(paso => {
+            const item = document.createElement("li");
+            item.textContent = paso;
+            lista.appendChild(item);
+        });
+        detalle.appendChild(lista);
+        contenedor.appendChild(detalle);
+    }
+
+    function mostrarComparacion(resultados) {
+        const contenedor = elemento("resultadoTransporte");
+        contenedor.replaceChildren();
+        const titulo = document.createElement("h2");
+        titulo.textContent = "Comparación de métodos";
+        contenedor.appendChild(titulo);
+        const tabla = document.createElement("table");
+        tabla.className = "comparison-table";
+        const cabecera = document.createElement("tr");
+        ["Método", "Tipo", "Costo total"].forEach(texto => {
+            const celda = document.createElement("th");
+            celda.textContent = texto;
+            cabecera.appendChild(celda);
+        });
+        tabla.appendChild(cabecera);
+
+        resultados.forEach(resultado => {
+            const fila = document.createElement("tr");
+            [
+                resultado.metodo_nombre,
+                resultado.es_optimo ? "Óptimo" : "Heurística inicial",
+                Number(resultado.costo_total).toLocaleString("es-GT", { maximumFractionDigits: 4 })
+            ].forEach(texto => {
+                const celda = document.createElement("td");
+                celda.textContent = texto;
+                fila.appendChild(celda);
+            });
+            tabla.appendChild(fila);
+        });
+
+        contenedor.appendChild(tabla);
+        const optimo = resultados.find(resultado => resultado.es_optimo);
+        mostrarResultadoIndividual(optimo, contenedor, false);
+    }
+
+    async function calcularTransporte() {
+        const boton = elemento("btnCalcularTransporte");
+        const mensaje = elemento("mensajeTransporte");
+        boton.disabled = true;
+        mensaje.classList.remove("error");
+        mensaje.textContent = "Calculando distribución...";
+
+        try {
+            const respuesta = await fetch("/api/optimizacion/transporte", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(recogerModeloTransporte())
+            });
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok || !datos.ok) {
+                throw new Error(datos.error || "No se pudo calcular la distribución");
+            }
+
+            const contenedor = elemento("resultadoTransporte");
+            contenedor.hidden = false;
+
+            if (datos.modo === "comparar") {
+                mostrarComparacion(datos.resultados);
+            } else {
+                mostrarResultadoIndividual(datos.resultado, contenedor);
+            }
+
+            mensaje.textContent = "Cálculo completado.";
+            contenedor.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (error) {
+            console.error("Error calculando transporte:", error);
+            mensaje.textContent = error.message;
+            mensaje.classList.add("error");
+        } finally {
+            boton.disabled = false;
+        }
+    }
+
+    /* =========================================================
+       REGISTRO DE ESTUDIANTES
+    ========================================================= */
+
+    function mostrarMensajeEstudiante(texto, tipo = "") {
+        const mensaje = elemento("mensajeEstudiante");
+        mensaje.textContent = texto;
+        mensaje.classList.remove("success", "error");
+
+        if (tipo) {
+            mensaje.classList.add(tipo);
+        }
+    }
+
+    function crearElementoEstudiante(estudiante) {
+        const item = document.createElement("div");
+        item.className = "student-item";
+
+        const datosEstudiante = document.createElement("div");
+
+        const nombre = document.createElement("div");
+        nombre.className = "student-name";
+        nombre.textContent = estudiante.nombre;
+
+        const fecha = document.createElement("div");
+        fecha.className = "student-date";
+        fecha.textContent = estudiante.created_at
+            ? `Registrado: ${formatearFecha(estudiante.created_at)}`
+            : "";
+
+        const carnet = document.createElement("div");
+        carnet.className = "student-id";
+        carnet.textContent = estudiante.carnet;
+
+        datosEstudiante.appendChild(nombre);
+        datosEstudiante.appendChild(fecha);
+        item.appendChild(datosEstudiante);
+        item.appendChild(carnet);
+
+        return item;
+    }
+
+    async function cargarEstudiantes() {
+        const lista = elemento("listaEstudiantes");
+
+        try {
+            const respuesta = await fetch("/api/estudiantes");
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok || !resultado.ok) {
+                throw new Error(resultado.error || "No se pudo cargar el registro");
+            }
+
+            const estudiantes = resultado.estudiantes || [];
+            lista.innerHTML = "";
+            ponerTexto("cantidadEstudiantes", estudiantes.length);
+
+            if (estudiantes.length === 0) {
+                lista.innerHTML = '<div class="empty-state">No hay estudiantes registrados.</div>';
+                return;
+            }
+
+            estudiantes.forEach(estudiante => {
+                lista.appendChild(crearElementoEstudiante(estudiante));
+            });
+
+        } catch (error) {
+            console.error("Error cargando estudiantes:", error);
+            lista.innerHTML = '<div class="empty-state">No se pudo cargar el registro.</div>';
+            mostrarMensajeEstudiante(error.message, "error");
+        }
+    }
+
+    async function registrarEstudiante(evento) {
+        evento.preventDefault();
+
+        const formulario = evento.currentTarget;
+        const boton = elemento("btnRegistrarEstudiante");
+        const nombre = elemento("nombreEstudiante").value.trim();
+        const carnet = elemento("carnetEstudiante").value.trim().toUpperCase();
+
+        boton.disabled = true;
+        mostrarMensajeEstudiante("Guardando estudiante...");
+
+        try {
+            const respuesta = await fetch("/api/estudiantes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nombre, carnet })
+            });
+
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok || !resultado.ok) {
+                throw new Error(resultado.error || "No se pudo registrar el estudiante");
+            }
+
+            formulario.reset();
+            mostrarMensajeEstudiante("Estudiante registrado correctamente.", "success");
+            mostrarToast(`Estudiante registrado: ${resultado.estudiante.carnet}`);
+            await cargarEstudiantes();
+            elemento("nombreEstudiante").focus();
+
+        } catch (error) {
+            console.error("Error registrando estudiante:", error);
+            mostrarMensajeEstudiante(error.message, "error");
+
+        } finally {
+            boton.disabled = false;
+        }
+    }
+
+    /* =========================================================
        HISTORIAL
     ========================================================= */
 
@@ -1758,33 +2507,6 @@
         });
     }
 
-    function mostrarArm64(registros) {
-        const contenedor = elemento("listaArm64");
-        contenedor.innerHTML = "";
-
-        if (!registros || registros.length === 0) {
-            contenedor.innerHTML =
-                '<div class="empty-state">Sin resultados registrados.</div>';
-            return;
-        }
-
-        registros
-            .slice()
-            .reverse()
-            .slice(0, 10)
-            .forEach(registro => {
-                const texto =
-                    `MAX=${registro.max} · ` +
-                    `MIN=${registro.min} · ` +
-                    `AVG=${registro.avg} · ` +
-                    `COUNT=${registro.count}`;
-
-                contenedor.appendChild(
-                    crearItemHistorial(texto, registro.timestamp)
-                );
-            });
-    }
-
     async function cargarHistorial() {
         try {
             const respuesta = await fetch("/api/historial?limite=20");
@@ -1804,28 +2526,11 @@
             cargarSerie(graficaDistancia, historial.distancia);
             cargarSerie(graficaLuz, historial.luz);
 
-            // Gráfica del promedio ARM64
-            graficaArm64.data.labels = [];
-            graficaArm64.data.datasets[0].data = [];
-
-            (historial.arm64 || []).forEach(registro => {
-                const fecha = new Date(registro.timestamp);
-                graficaArm64.data.labels.push(
-                    fecha.toLocaleTimeString("es-GT", {
-                        hour: "2-digit",
-                        minute: "2-digit"
-                    })
-                );
-                graficaArm64.data.datasets[0].data.push(Number(registro.avg));
-            });
-            graficaArm64.update("none");
-
             // Marcar que los datos del historial están cargados
             datosHistorialCargados = true;
 
             mostrarEventos(historial.eventos);
             mostrarComandos(historial.comandos);
-            mostrarArm64(historial.arm64);
 
         } catch (error) {
             console.error("Error cargando historial:", error);
@@ -1839,6 +2544,12 @@
     actualizarReloj();
     actualizarDatos();
     cargarHistorial();
+    generarTablaTransporte();
+
+    elemento("formEstudiante").addEventListener(
+        "submit",
+        registrarEstudiante
+    );
 
     setInterval(actualizarReloj, 1000);
     setInterval(actualizarDatos, 500);

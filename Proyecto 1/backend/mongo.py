@@ -11,7 +11,7 @@ from iot import globals as gl
 
 class MongoDBManager:
     def __init__(self):
-        """Inicializa la conexión y define las 5 colecciones obligatorias."""
+        """Inicializa la conexión y define las colecciones del sistema."""
         load_dotenv()
         uri = os.getenv("MONGO_URI")
         
@@ -23,8 +23,9 @@ class MongoDBManager:
             self.col_sensor_readings = self.db["sensor_readings"]
             self.col_events = self.db["events"]
             self.col_commands = self.db["commands"]
-            self.col_arm64_results = self.db["arm64_results"]
             self.col_system_status = self.db["system_status"]
+            self.col_students = self.db["students"]
+            self.col_students.create_index("carnet", unique=True)
             print("[DB] Conexión a MongoDB Atlas establecida correctamente.")
         except Exception as e:
             print(f"[DB] Error de conexión a la base de datos: {e}")
@@ -58,19 +59,6 @@ class MongoDBManager:
             "timestamp": self.get_timestamp()
         }
         self.col_system_status.insert_one(document)
-
-
-    def insert_arm64_result(self, max_val, min_val, avg_val, count_val):
-        """Registra los cálculos devueltos por el módulo en ensamblador."""
-        document = {
-            "maximo": max_val,
-            "minimo": min_val,
-            "promedio": avg_val,
-            "cantidad": count_val,
-            "timestamp": self.get_timestamp()
-        }
-        self.col_arm64_results.insert_one(document)
-        print("[DB] Resultados de ARM64 guardados en Atlas.")
 
 # Bloque de comprobación aislado
 if __name__ == "__main__":

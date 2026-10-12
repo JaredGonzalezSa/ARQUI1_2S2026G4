@@ -15,7 +15,6 @@ TOPICS = [
     f"{BASE}/actuadores/ventilador",
     f"{BASE}/actuadores/alarma",
     f"{BASE}/estado/global",
-    f"{BASE}/arm64/resultados",
 ]
 
 cliente = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="limpiar_todo")

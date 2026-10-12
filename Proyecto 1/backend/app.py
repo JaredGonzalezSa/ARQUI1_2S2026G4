@@ -1,14 +1,17 @@
 import json
 import os
+import re
 
 from flask import Flask, jsonify, render_template, request
 import paho.mqtt.client as mqtt
 
-from datetime import timezone
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
 
 from mongo import MongoDBManager
+from transport import METHOD_NAMES, TransportValidationError, solve_transport
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -47,14 +50,6 @@ datos = {
     "zona3": "---",
 
     "estado": "---",
-
-    "arm64": {
-        "max": 0,
-        "min": 0,
-        "avg": 0,
-        "count": 0
-    },
-
     "ciclo": 0
 }
 
@@ -100,6 +95,11 @@ def conectar_mongo():
             "edificio_iot"
         ]
 
+        mongo_db["students"].create_index(
+            "carnet",
+            unique=True
+        )
+
         print(
             "[DB] Conectado a MongoDB Atlas"
         )
@@ -137,104 +137,6 @@ def convertir_timestamp(timestamp):
         )
 
     return timestamp.isoformat()
-
-
-# -------------------------------------------------
-# RESULTADO ARM64
-# -------------------------------------------------
-
-def leer_resultado_arm64(contenido):
-
-    # Formato JSON
-    try:
-
-        resultado = json.loads(
-            contenido
-        )
-
-        return {
-            "max": int(
-                resultado.get(
-                    "max",
-                    resultado.get(
-                        "maximo",
-                        0
-                    )
-                )
-            ),
-
-            "min": int(
-                resultado.get(
-                    "min",
-                    resultado.get(
-                        "minimo",
-                        0
-                    )
-                )
-            ),
-
-            "avg": int(
-                resultado.get(
-                    "avg",
-                    resultado.get(
-                        "promedio",
-                        0
-                    )
-                )
-            ),
-
-            "count": int(
-                resultado.get(
-                    "count",
-                    resultado.get(
-                        "cantidad",
-                        0
-                    )
-                )
-            )
-        }
-
-    except Exception:
-        pass
-
-
-    # Formato del backend:
-    # MAX:35,MIN:20,AVG:27,COUNT:20
-    try:
-
-        valores = {}
-
-        partes = contenido.split(",")
-
-        for parte in partes:
-
-            clave, valor = parte.split(
-                ":",
-                1
-            )
-
-            valores[
-                clave.strip().upper()
-            ] = int(
-                valor.strip()
-            )
-
-        return {
-            "max": valores["MAX"],
-            "min": valores["MIN"],
-            "avg": valores["AVG"],
-            "count": valores["COUNT"]
-        }
-
-    except Exception as error:
-
-        print(
-            "[ARM64] No se pudo interpretar "
-            "el resultado:",
-            error
-        )
-
-        return None
 
 
 # -------------------------------------------------
@@ -414,16 +316,6 @@ def al_recibir(
     elif topic == f"{BASE}/estado/global":
         datos["estado"] = contenido
 
-    # ------------------------------------------
-    # RESULTADOS ARM64
-    # ------------------------------------------
-
-    elif topic == f"{BASE}/arm64/resultados":
-        resultado = leer_resultado_arm64(contenido)
-        if resultado:
-            datos["arm64"] = resultado
-
-
 cliente_mqtt = mqtt.Client(
     mqtt.CallbackAPIVersion.VERSION2,
     client_id="Dashboard_202500177"
@@ -459,6 +351,154 @@ def obtener_datos():
     return jsonify(
         datos
     )
+
+
+# -------------------------------------------------
+# OPTIMIZACION DE TRANSPORTE
+# -------------------------------------------------
+
+@app.route("/api/optimizacion/transporte", methods=["POST"])
+def optimizar_transporte():
+    """Calcula una asignacion de compras sin intervenir en el subsistema IoT."""
+    contenido = request.get_json(silent=True) or {}
+    metodo = str(contenido.get("metodo", "vogel")).strip().lower()
+
+    argumentos = {
+        "costs": contenido.get("costos"),
+        "supply": contenido.get("oferta"),
+        "demand": contenido.get("demanda"),
+        "supplier_names": contenido.get("proveedores"),
+        "destination_names": contenido.get("destinos")
+    }
+
+    try:
+        if metodo == "comparar":
+            resultados = [
+                solve_transport(method=clave, **argumentos)
+                for clave in METHOD_NAMES
+            ]
+            mejor = min(resultados, key=lambda resultado: resultado["costo_total"])
+
+            return jsonify({
+                "ok": True,
+                "modo": "comparar",
+                "resultados": resultados,
+                "mejor_metodo": mejor["metodo"],
+                "mejor_costo": mejor["costo_total"]
+            })
+
+        resultado = solve_transport(method=metodo, **argumentos)
+        return jsonify({
+            "ok": True,
+            "modo": "individual",
+            "resultado": resultado
+        })
+
+    except TransportValidationError as error:
+        return jsonify({"ok": False, "error": str(error)}), 400
+    except Exception as error:
+        print("[OPTIMIZACION] Error calculando transporte:", error)
+        return jsonify({
+            "ok": False,
+            "error": "No se pudo completar la optimizacion"
+        }), 500
+
+
+# -------------------------------------------------
+# REGISTRO DE ESTUDIANTES
+# -------------------------------------------------
+
+@app.route("/api/estudiantes", methods=["GET", "POST"])
+def gestionar_estudiantes():
+
+    global mongo_db
+
+    if mongo_db is None and not conectar_mongo():
+        return jsonify({
+            "ok": False,
+            "error": "MongoDB no está conectado"
+        }), 503
+
+    if request.method == "GET":
+        try:
+            estudiantes = list(
+                mongo_db["students"]
+                .find({}, {"_id": 0})
+                .sort("created_at", -1)
+                .limit(200)
+            )
+
+            return jsonify({
+                "ok": True,
+                "estudiantes": [
+                    {
+                        "nombre": estudiante.get("nombre", ""),
+                        "carnet": estudiante.get("carnet", ""),
+                        "created_at": convertir_timestamp(
+                            estudiante.get("created_at")
+                        )
+                    }
+                    for estudiante in estudiantes
+                ]
+            })
+
+        except Exception as error:
+            print("[DB] Error consultando estudiantes:", error)
+            mongo_db = None
+
+            return jsonify({
+                "ok": False,
+                "error": "No se pudo consultar el registro"
+            }), 503
+
+    contenido = request.get_json(silent=True) or {}
+    nombre = " ".join(str(contenido.get("nombre", "")).split())
+    carnet = str(contenido.get("carnet", "")).strip().upper()
+
+    if len(nombre) < 2 or len(nombre) > 100:
+        return jsonify({
+            "ok": False,
+            "error": "El nombre debe tener entre 2 y 100 caracteres"
+        }), 400
+
+    if not re.fullmatch(r"[A-Z0-9-]{4,20}", carnet):
+        return jsonify({
+            "ok": False,
+            "error": "El carné debe tener entre 4 y 20 caracteres alfanuméricos"
+        }), 400
+
+    estudiante = {
+        "nombre": nombre,
+        "carnet": carnet,
+        "created_at": datetime.now(timezone.utc)
+    }
+
+    try:
+        mongo_db["students"].insert_one(estudiante)
+
+        return jsonify({
+            "ok": True,
+            "estudiante": {
+                "nombre": nombre,
+                "carnet": carnet,
+                "created_at": convertir_timestamp(estudiante["created_at"])
+            }
+        }), 201
+
+    except DuplicateKeyError:
+        return jsonify({
+            "ok": False,
+            "error": "Ya existe un estudiante con ese carné"
+        }), 409
+
+    except Exception as error:
+        print("[DB] Error registrando estudiante:", error)
+        mongo_db = None
+
+        return jsonify({
+            "ok": False,
+            "error": "No se pudo guardar el estudiante"
+        }), 503
 
 
 # -------------------------------------------------
@@ -501,7 +541,6 @@ def obtener_historial():
         "gas": [],
         "distancia": [],
         "luz": [],
-        "arm64": [],
         "eventos": [],
         "comandos": []
     }
@@ -556,56 +595,6 @@ def obtener_historial():
                             )
                         )
                 })
-
-
-        # --------------------------------------
-        # ARM64
-        # --------------------------------------
-
-        resultados_arm64 = list(
-            mongo_db["arm64_results"]
-            .find(
-                {},
-                {"_id": 0}
-            )
-            .sort(
-                "timestamp",
-                -1
-            )
-            .limit(
-                limite
-            )
-        )
-
-        resultados_arm64.reverse()
-
-
-        for resultado in resultados_arm64:
-
-            historial["arm64"].append({
-                "max": resultado.get(
-                    "maximo"
-                ),
-
-                "min": resultado.get(
-                    "minimo"
-                ),
-
-                "avg": resultado.get(
-                    "promedio"
-                ),
-
-                "count": resultado.get(
-                    "cantidad"
-                ),
-
-                "timestamp":
-                    convertir_timestamp(
-                        resultado.get(
-                            "timestamp"
-                        )
-                    )
-            })
 
 
         # --------------------------------------

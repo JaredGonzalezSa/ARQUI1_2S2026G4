@@ -1,5 +1,4 @@
 import time
-import subprocess
 import os
 import sys
 import paho.mqtt.client as mqtt
@@ -11,7 +10,6 @@ from mongo import MongoDBManager
 import globals as gl
 from core.sensores import SensorManager
 from core.actuadores import ActuadorManager
-from arm64_integracion import procesar_arm64
 ultimo_estado_luces_auto = None
 ultimo_estado_ventilador_auto = None
 
@@ -144,7 +142,7 @@ client.loop_start()
 # ==========================================
 try:
     print("\n" + "="*60)
-    print("SISTEMA EDIFICIO INTELIGENTE IoT")
+    print("AULANEXO - MONITOREO INTELIGENTE")
     print("="*60)
     print(f"Broker MQTT:  {gl.BROKER}")
     print(f"Base de datos: MongoDB Atlas")
@@ -162,7 +160,6 @@ try:
     ultimo_ciclo_dist = time.time()
     ultimo_ciclo_luz = time.time()
     ultimo_lcd = time.time()
-    ultimo_arm64 = time.time()
     
     INTERVALO_TEMP = 2.0
     INTERVALO_HUM = 2.0
@@ -170,7 +167,6 @@ try:
     INTERVALO_DIST = 0.5
     INTERVALO_LUZ = 1.0
     INTERVALO_LCD = 2.0
-    INTERVALO_ARM64 = 10
 
     temp = 0
     hum = 0
@@ -439,28 +435,6 @@ try:
             except Exception as e:
                 print(f"[MONGO] Error al insertar evento: {e}")
             client.publish(f"{gl.TOPIC_BASE}/actuadores/puerta", "ABIERTA_AUTO", retain=True)
-        
-        # ==========================================
-        # ARM64
-        # ==========================================
-        if tiempo_actual - ultimo_arm64 >= INTERVALO_ARM64:
-            ultimo_arm64 = tiempo_actual
-            sensor.generar_archivo_arm64(20)
-            
-            try:
-                resultado = procesar_arm64()
-                max_val = resultado["max"]
-                min_val = resultado["min"]
-                avg_val = resultado["avg"]
-                count_val = resultado["count"]
-                
-                db.insert_arm64_result(max_val, min_val, avg_val, count_val)
-                payload = f"MAX:{max_val},MIN:{min_val},AVG:{avg_val},COUNT:{count_val}"
-                client.publish(f"{gl.TOPIC_BASE}/arm64/resultados", payload, retain=True)
-                print(f"ARM64     | MAX:{max_val}  MIN:{min_val}  AVG:{avg_val}  COUNT:{count_val}")
-                
-            except Exception as e:
-                print(f"ARM64     | Error: {e}")
         
         # ==========================================
         # PUBLICAR ESTADO DE PUERTA

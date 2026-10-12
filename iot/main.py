@@ -392,9 +392,9 @@ try:
             nuevo_estado = gl.ESTADO_NORMAL
             
             if actuador.modo_ventilador_auto:
-                actuador.apagar_ventilador()
                 if ultimo_estado_ventilador_auto != "OFF":
                     ultimo_estado_ventilador_auto = "OFF"
+                    actuador.apagar_ventilador()
                     client.publish(f"{gl.TOPIC_BASE}/actuadores/ventilador", "OFF", retain=True)
 
         # SALIDA DE EMERGENCIA
@@ -491,6 +491,13 @@ except KeyboardInterrupt:
 
 finally:
     if 'actuador' in locals():
+        try:
+            if hasattr(actuador, 'servo_pwm'):
+                actuador.servo_pwm.stop()   # Detiene PWM del servo
+            if hasattr(actuador, 'buzzer_pwm'):
+                actuador.buzzer_pwm.stop()  # Detiene PWM del buzzer
+        except Exception as e:
+            print(f"[CLEANUP] Error al detener PWM: {e}")
         del actuador
     if 'sensor' in locals():
         del sensor

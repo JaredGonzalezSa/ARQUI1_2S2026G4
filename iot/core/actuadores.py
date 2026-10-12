@@ -32,7 +32,6 @@ class ActuadorManager:
         
         self.lcd = None
         self.lcd_disponible = False
-        self._inicializar_lcd()
         
         self.puerta_abierta = False
         self.luces_encendidas = False
@@ -49,7 +48,7 @@ class ActuadorManager:
         self.buzzer_pwm = None
         self.buzzer_frecuencia = 1000
         self.buzzer_activo = False
-        self.buzzer_silenciada = False  # <--- CORREGIDO: self en lugar de serf
+        self.buzzer_silenciada = False 
         self.hilo_buzzer = None
         self.buzzer_ejecutando = False
         
@@ -78,6 +77,8 @@ class ActuadorManager:
         self.servo_duracion = 0.5            
         self.servo_estado_final = False
         
+        self._inicializar_lcd()
+
         if self.lcd_disponible:
             self.actualizar_lcd("Sistema Iniciado", "Esperando...")
         
@@ -141,10 +142,9 @@ class ActuadorManager:
     def _inicializar_servo(self):
         GPIO.setup(self.PIN_SERVO, GPIO.OUT)
         self.servo_pwm = GPIO.PWM(self.PIN_SERVO, 50)
-        self.servo_pwm.start(0)
+        self.servo_pwm.start(2.5)
         self.servo_pwm.ChangeDutyCycle(2.5)
         time.sleep(0.5)
-        self.servo_pwm.ChangeDutyCycle(0)
     
     # ==========================================
     # CONTROL DEL BUZZER PASIVO
@@ -269,14 +269,17 @@ class ActuadorManager:
     
     def actualizar_lcd(self, linea1, linea2):
         if not self.lcd_disponible or self.lcd is None:
-            return
+            self._inicializar_lcd()  # intenta reconectar
+            if not self.lcd_disponible:
+                return
         try:
             linea1 = linea1[:16].ljust(16)
             linea2 = linea2[:16].ljust(16)
             self.lcd.clear()
             self.lcd.text(linea1, 1)
             self.lcd.text(linea2, 2)
-        except Exception:
+        except Exception as e:
+            print(f"[LCD] Error al escribir: {e}")
             self.lcd_disponible = False
             self.lcd = None
     
@@ -344,9 +347,8 @@ class ActuadorManager:
         return self.modo_ventilador_auto
 
     def abrir_puerta(self):
-        self.servo_pwm.ChangeDutyCycle(9.72)  # 130°
+        self.servo_pwm.ChangeDutyCycle(7.5)  # 130°
         time.sleep(0.5)
-        self.servo_pwm.ChangeDutyCycle(0)
         GPIO.output(self.PIN_LED_PUERTA, True)
         self.puerta_abierta = True
         self._cancelar_timer_puerta()
@@ -368,7 +370,6 @@ class ActuadorManager:
     def cerrar_puerta(self):
         self.servo_pwm.ChangeDutyCycle(2.5)   # 0°
         time.sleep(0.5)
-        self.servo_pwm.ChangeDutyCycle(0)
         GPIO.output(self.PIN_LED_PUERTA, False)
         self.puerta_abierta = False
         self._cancelar_timer_puerta()

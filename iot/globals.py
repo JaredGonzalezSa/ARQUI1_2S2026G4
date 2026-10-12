@@ -8,11 +8,11 @@ ESTADO_EMERGENCIA = "EMERGENCIA"
 # ==========================================
 # UMBRALES DE SENSORES
 # ==========================================
-UMBRAL_TEMP_ALTA = 28.0
+UMBRAL_TEMP_ALTA = 27.0
 UMBRAL_HUMEDAD_MIN = 30.0
 UMBRAL_HUMEDAD_MAX = 70.0
-UMBRAL_GAS_PELIGRO = 300
-UMBRAL_LUZ_BAJA = 300
+UMBRAL_GAS_PELIGRO = 200
+UMBRAL_LUZ_BAJA = 50
 UMBRAL_DISTANCIA_APERTURA = 15.0
 
 # ==========================================

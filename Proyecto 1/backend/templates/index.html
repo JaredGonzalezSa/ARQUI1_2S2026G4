@@ -818,6 +818,155 @@
         }
 
         /* =====================================================
+           PROGRAMACION LINEAL CON SENSORES
+        ===================================================== */
+        .linear-layout {
+            display: grid;
+            grid-template-columns: minmax(260px, 340px) 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .linear-config,
+        .linear-results {
+            padding: 22px;
+        }
+
+        .sensor-snapshot {
+            margin: 16px 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .snapshot-item {
+            padding: 11px;
+            background: var(--surface-soft);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+        }
+
+        .snapshot-item span {
+            display: block;
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .snapshot-item strong {
+            display: block;
+            margin-top: 4px;
+            font-size: 17px;
+        }
+
+        .budget-scale {
+            display: grid;
+            grid-template-columns: 1fr 84px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .budget-scale input[type="range"] {
+            width: 100%;
+            accent-color: var(--orange);
+        }
+
+        .budget-scale input[type="number"] {
+            width: 100%;
+            min-height: 42px;
+            padding: 8px;
+            border: 1px solid #cfd8e3;
+            border-radius: 9px;
+            font: inherit;
+        }
+
+        .linear-model {
+            margin-top: 16px;
+            padding: 14px;
+            background: #f8fafc;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            color: #475569;
+            font: 12px/1.6 Consolas, monospace;
+        }
+
+        .linear-summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .linear-kpi {
+            padding: 14px;
+            background: #f8fafc;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+        }
+
+        .linear-kpi span {
+            display: block;
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .linear-kpi strong {
+            display: block;
+            margin-top: 5px;
+            font-size: 20px;
+        }
+
+        .allocation-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .allocation-item {
+            padding: 14px;
+            background: white;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+        }
+
+        .allocation-heading {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .allocation-track {
+            height: 10px;
+            margin: 9px 0;
+            overflow: hidden;
+            background: #edf1f5;
+            border-radius: 999px;
+        }
+
+        .allocation-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--orange), #f59e0b);
+            border-radius: inherit;
+        }
+
+        .allocation-meta {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .linear-warning {
+            margin-top: 12px;
+            padding: 12px 14px;
+            background: #fff7ed;
+            color: #9a3412;
+            border: 1px solid #fed7aa;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        /* =====================================================
            HISTORIAL
         ===================================================== */
         #view-historial.active {
@@ -961,6 +1110,14 @@
             .students-layout {
                 grid-template-columns: 1fr;
             }
+
+            .linear-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .linear-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 620px) {
@@ -1024,8 +1181,8 @@
         >
 
         <div class="project-title">
-            <strong>PROYECTO 1</strong>
-            <span>AulaNexo</span>
+            <strong>OPTIAULA IO</strong>
+            <span>Laboratorio de decisiones con sensores</span>
         </div>
     </header>
 
@@ -1046,6 +1203,10 @@
 
             <button class="nav-button" data-view="optimizacion" onclick="cambiarVista('optimizacion')">
                 Costo m&iacute;nimo
+            </button>
+
+            <button class="nav-button" data-view="lineal" onclick="cambiarVista('lineal')">
+                Programaci&oacute;n lineal
             </button>
 
             <button class="nav-button" data-view="estudiantes" onclick="cambiarVista('estudiantes')">
@@ -1390,6 +1551,60 @@
         </section>
 
         <!-- =====================================================
+             PROGRAMACION LINEAL CON SENSORES
+        ====================================================== -->
+        <section id="view-lineal" class="view">
+            <div class="page-heading">
+                <h1>Programaci&oacute;n lineal con sensores</h1>
+                <p>Convierte las lecturas en un plan &oacute;ptimo de asignaci&oacute;n energ&eacute;tica.</p>
+            </div>
+
+            <div class="linear-layout">
+                <div class="card linear-config">
+                    <div class="optimization-note">
+                        El modelo recomienda porcentajes de operaci&oacute;n. No env&iacute;a comandos
+                        al hardware ni sustituye el protocolo de emergencia.
+                    </div>
+
+                    <h3>Lecturas en tiempo real</h3>
+                    <div class="sensor-snapshot">
+                        <div class="snapshot-item"><span>Temperatura</span><strong id="lpTemperatura">--</strong></div>
+                        <div class="snapshot-item"><span>Humedad</span><strong id="lpHumedad">--</strong></div>
+                        <div class="snapshot-item"><span>Gas</span><strong id="lpGas">--</strong></div>
+                        <div class="snapshot-item"><span>Luz</span><strong id="lpLuz">--</strong></div>
+                        <div class="snapshot-item"><span>Distancia</span><strong id="lpDistancia">--</strong></div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="presupuestoEnergia">Presupuesto energ&eacute;tico (0-315)</label>
+                        <div class="budget-scale">
+                            <input id="presupuestoEnergiaRango" type="range" min="0" max="315" value="120"
+                                   oninput="sincronizarPresupuesto(this.value)">
+                            <input id="presupuestoEnergia" type="number" min="0" max="315" value="120"
+                                   oninput="sincronizarPresupuesto(this.value, true)">
+                        </div>
+                    </div>
+
+                    <button id="btnCalcularLineal" class="action-btn optimization-primary" type="button"
+                            onclick="calcularPlanLineal()">Optimizar recursos</button>
+                    <div id="mensajeLineal" class="optimization-message" aria-live="polite"></div>
+
+                    <div class="linear-model">
+                        Max Z = &Sigma; beneficio<sub>i</sub> &middot; x<sub>i</sub><br>
+                        s.a. &Sigma; costo<sub>i</sub> &middot; x<sub>i</sub> &le; presupuesto<br>
+                        0 &le; x<sub>i</sub> &le; demanda calculada por sensores
+                    </div>
+                </div>
+
+                <div id="resultadoLineal" class="card linear-results">
+                    <div class="empty-state">
+                        Esperando suficientes lecturas para generar el plan &oacute;ptimo.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
              REGISTRO DE ESTUDIANTES
         ====================================================== -->
         <section id="view-estudiantes" class="view">
@@ -1540,6 +1755,10 @@
 
         if (nombre === "estudiantes") {
             cargarEstudiantes();
+        }
+
+        if (nombre === "lineal") {
+            calcularPlanLineal();
         }
     }
 
@@ -1834,6 +2053,7 @@
             ponerTexto("gas", datos.gas);
             ponerTexto("distancia", datos.distancia);
             ponerTexto("luz", datos.luz);
+            actualizarLecturasLineales(datos);
 
             // Actuadores
             ponerTexto("puerta", datos.puerta);
@@ -2320,6 +2540,156 @@
     }
 
     /* =========================================================
+       PROGRAMACION LINEAL CON SENSORES
+    ========================================================= */
+
+    function sincronizarPresupuesto(valor, desdeNumero = false) {
+        const numero = Math.max(0, Math.min(315, Number(valor) || 0));
+
+        if (desdeNumero) {
+            elemento("presupuestoEnergiaRango").value = numero;
+        } else {
+            elemento("presupuestoEnergia").value = numero;
+        }
+    }
+
+    function actualizarLecturasLineales(datos) {
+        ponerTexto("lpTemperatura", `${datos.temperatura ?? "--"} °C`);
+        ponerTexto("lpHumedad", `${datos.humedad ?? "--"} %`);
+        ponerTexto("lpGas", datos.gas ?? "--");
+        ponerTexto("lpLuz", datos.luz ?? "--");
+        ponerTexto("lpDistancia", `${datos.distancia ?? "--"} cm`);
+    }
+
+    function crearKpiLineal(etiqueta, valor) {
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "linear-kpi";
+        const titulo = document.createElement("span");
+        titulo.textContent = etiqueta;
+        const dato = document.createElement("strong");
+        dato.textContent = valor;
+        tarjeta.append(titulo, dato);
+        return tarjeta;
+    }
+
+    function mostrarPlanLineal(resultado) {
+        const contenedor = elemento("resultadoLineal");
+        contenedor.replaceChildren();
+
+        const resumen = document.createElement("div");
+        resumen.className = "linear-summary";
+        resumen.append(
+            crearKpiLineal("Presupuesto", resultado.presupuesto),
+            crearKpiLineal("Energía usada", resultado.energia_usada),
+            crearKpiLineal("Beneficio", resultado.beneficio_total),
+            crearKpiLineal("Demanda pendiente", resultado.demanda_no_cubierta)
+        );
+        contenedor.appendChild(resumen);
+
+        const titulo = document.createElement("h2");
+        titulo.textContent = "Asignación óptima recomendada";
+        contenedor.appendChild(titulo);
+
+        const lista = document.createElement("div");
+        lista.className = "allocation-list";
+
+        resultado.actividades.forEach(actividad => {
+            const item = document.createElement("div");
+            item.className = "allocation-item";
+            const encabezado = document.createElement("div");
+            encabezado.className = "allocation-heading";
+            const nombre = document.createElement("span");
+            nombre.textContent = actividad.nombre;
+            const porcentaje = document.createElement("span");
+            porcentaje.textContent = `${actividad.asignacion}% / ${actividad.demanda}%`;
+            encabezado.append(nombre, porcentaje);
+
+            const pista = document.createElement("div");
+            pista.className = "allocation-track";
+            const relleno = document.createElement("div");
+            relleno.className = "allocation-fill";
+            relleno.style.width = `${Math.min(100, actividad.cobertura)}%`;
+            pista.appendChild(relleno);
+
+            const detalle = document.createElement("div");
+            detalle.className = "allocation-meta";
+            detalle.textContent =
+                `Cobertura ${actividad.cobertura}% · Energía ${actividad.energia_usada} · ` +
+                `Prioridad ${actividad.indice_prioridad} · Datos: ${actividad.origen}`;
+            item.append(encabezado, pista, detalle);
+            lista.appendChild(item);
+        });
+
+        contenedor.appendChild(lista);
+
+        resultado.advertencias.forEach(texto => {
+            const alerta = document.createElement("div");
+            alerta.className = "linear-warning";
+            alerta.textContent = texto;
+            contenedor.appendChild(alerta);
+        });
+
+        const estado = document.createElement("div");
+        estado.className = "optimization-message";
+        estado.style.marginTop = "14px";
+        estado.textContent = resultado.es_optimo
+            ? "Solución óptima para el modelo lineal y el presupuesto indicados."
+            : "Solución aproximada.";
+        contenedor.appendChild(estado);
+    }
+
+    let calculoLinealEnCurso = false;
+
+    async function calcularPlanLineal(silencioso = false) {
+        if (calculoLinealEnCurso) {
+            return;
+        }
+
+        calculoLinealEnCurso = true;
+        const boton = elemento("btnCalcularLineal");
+        const mensaje = elemento("mensajeLineal");
+        boton.disabled = true;
+
+        if (!silencioso) {
+            mensaje.textContent = "Resolviendo modelo lineal...";
+            mensaje.classList.remove("error");
+        }
+
+        try {
+            const respuesta = await fetch("/api/optimizacion/recursos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    presupuesto: Number(elemento("presupuestoEnergia").value)
+                })
+            });
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok || !datos.ok) {
+                throw new Error(datos.error || "No se pudo resolver el modelo lineal");
+            }
+
+            mostrarPlanLineal(datos.resultado);
+            mensaje.textContent = silencioso
+                ? "Actualizado con las lecturas más recientes."
+                : "Plan óptimo calculado correctamente.";
+        } catch (error) {
+            console.error("Error en programación lineal:", error);
+            mensaje.textContent = error.message;
+            mensaje.classList.add("error");
+        } finally {
+            boton.disabled = false;
+            calculoLinealEnCurso = false;
+        }
+    }
+
+    function actualizarPlanLinealSiVisible() {
+        if (elemento("view-lineal").classList.contains("active")) {
+            calcularPlanLineal(true);
+        }
+    }
+
+    /* =========================================================
        REGISTRO DE ESTUDIANTES
     ========================================================= */
 
@@ -2554,6 +2924,7 @@
     setInterval(actualizarReloj, 1000);
     setInterval(actualizarDatos, 500);
     setInterval(cargarHistorial, 5000);
+    setInterval(actualizarPlanLinealSiVisible, 10000);
 </script>
 </body>
 </html>

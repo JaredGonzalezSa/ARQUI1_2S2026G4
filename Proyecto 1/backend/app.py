@@ -11,6 +11,7 @@ from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 
 from mongo import MongoDBManager
+from linear_optimizer import LinearOptimizationError, optimize_sensor_resources
 from transport import METHOD_NAMES, TransportValidationError, solve_transport
 import sys
 import os
@@ -401,6 +402,32 @@ def optimizar_transporte():
         return jsonify({
             "ok": False,
             "error": "No se pudo completar la optimizacion"
+        }), 500
+
+
+# -------------------------------------------------
+# PROGRAMACION LINEAL CON SENSORES
+# -------------------------------------------------
+
+@app.route("/api/optimizacion/recursos", methods=["POST"])
+def optimizar_recursos_del_aula():
+    """Genera un plan energetico con las lecturas MQTT mas recientes."""
+    contenido = request.get_json(silent=True) or {}
+
+    try:
+        resultado = optimize_sensor_resources(
+            datos,
+            contenido.get("presupuesto", 120)
+        )
+        return jsonify({"ok": True, "resultado": resultado})
+
+    except LinearOptimizationError as error:
+        return jsonify({"ok": False, "error": str(error)}), 400
+    except Exception as error:
+        print("[OPTIMIZACION] Error en programacion lineal:", error)
+        return jsonify({
+            "ok": False,
+            "error": "No se pudo calcular el plan lineal"
         }), 500
 
 

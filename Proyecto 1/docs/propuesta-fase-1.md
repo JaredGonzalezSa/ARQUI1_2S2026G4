@@ -1,10 +1,10 @@
-# Fase 1 - AulaNexo
+# Fase 1 - OptiAula IO
 
 ## 1. Nombre del producto o servicio
 
-**AulaNexo** es un sistema IoT para seguridad ambiental, confort, acceso e iluminación eficiente en aulas y laboratorios.
+**OptiAula IO** es un sistema de apoyo a decisiones que aplica modelos de transporte y programación lineal a datos ambientales capturados en aulas y laboratorios.
 
-El prototipo conserva la electrónica del proyecto base y la orienta a un problema concreto: espacios educativos que operan sin información ambiental integrada ni respuesta automática ante humo, calor, poca luz o necesidad de acceso.
+El prototipo conserva la electrónica del proyecto base como plataforma de captura y demostración, pero cambia su objetivo: utiliza las lecturas para recomendar cómo asignar recursos limitados, reducir costos y comparar decisiones mediante métodos de Investigación de Operaciones.
 
 ## 2. Problemas que resuelve
 
@@ -37,7 +37,7 @@ Para la encuesta indicada en los lineamientos, cada participante debe elegir sol
 
 ### Propuesta de valor
 
-AulaNexo concentra monitoreo, automatización, control remoto, registro básico de estudiantes y optimización de compras en un prototipo modular. El sistema detecta condiciones ambientales, activa respuestas físicas, mantiene información consultable y ayuda a distribuir adquisiciones entre proveedores con el menor costo posible. La institución puede probar el valor en una sola aula y ampliar después por zonas.
+OptiAula IO integra adquisición de datos, optimización de compras y planificación energética. El sistema ayuda a distribuir adquisiciones entre proveedores y convierte temperatura, humedad, gas, luz y proximidad en parámetros de un modelo lineal. Así, la institución obtiene recomendaciones cuantitativas y comparables en lugar de limitarse a observar o automatizar dispositivos.
 
 ## 4. Limitaciones y recursos disponibles
 
@@ -66,7 +66,7 @@ El prototipo es fabricable porque reutiliza componentes existentes y una integra
 
 ## 5. Nombre y logo
 
-**Nombre:** AulaNexo
+**Nombre:** OptiAula IO
 
 **Concepto visual:** una puerta de aula conectada con una hoja y una señal inalámbrica. La puerta representa acceso, la hoja representa confort y eficiencia, y la señal representa monitoreo IoT.
 
@@ -85,6 +85,12 @@ La declaración de “80% idea nueva + 20% benchmarking” se tratará como meta
 La nueva vista del dashboard permite registrar una matriz de costos por proveedor y producto o destino, junto con la oferta y demanda. El usuario puede aplicar Esquina Noroeste, Costo Mínimo, Aproximación de Vogel o un algoritmo exacto de flujo de costo mínimo, además de comparar sus costos totales. Esta función traslada al prototipo los métodos de transporte y asignación de recursos estudiados en Investigación de Operaciones.
 
 Las tres primeras alternativas producen soluciones iniciales factibles y se presentan como heurísticas; la opción de flujo de costo mínimo es la que garantiza el óptimo para cantidades enteras. El balanceo automático mediante un proveedor o destino ficticio permite trabajar con casos donde oferta y demanda no son iguales. El módulo es exclusivamente administrativo y no modifica el cableado, la adquisición de sensores ni el control de actuadores.
+
+### Programación lineal con datos reales
+
+Las lecturas MQTT alimentan un modelo continuo con cuatro variables: ventilación y nivel recomendado para tres zonas de iluminación. La función objetivo maximiza el beneficio de confort y seguridad, mientras una restricción limita el consumo al presupuesto energético seleccionado por el usuario. La temperatura, humedad y gas determinan la demanda máxima de ventilación; el nivel de luz determina la demanda de iluminación; y la distancia modifica la prioridad de la primera zona.
+
+Este componente convierte el hardware heredado en una fuente de parámetros para Investigación de Operaciones. El resultado muestra asignación, cobertura, energía utilizada, demanda pendiente y beneficio total. Se mantiene separado de los actuadores: funciona como apoyo a la decisión y no como control automático.
 
 ## Conexiones preservadas
 

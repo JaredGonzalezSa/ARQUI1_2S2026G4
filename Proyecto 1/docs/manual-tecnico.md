@@ -1,8 +1,8 @@
-# Manual técnico de AulaNexo
+# Manual técnico de OptiAula IO
 
 ## 1. Propósito
 
-AulaNexo monitorea y controla un aula o laboratorio mediante una Raspberry Pi. El sistema integra sensores, actuadores, mensajería MQTT, persistencia en MongoDB Atlas y un dashboard Flask.
+OptiAula IO es un sistema de apoyo a decisiones basado en Investigación de Operaciones. Reutiliza la adquisición de sensores y los actuadores de una Raspberry Pi, e integra mensajería MQTT, persistencia en MongoDB Atlas, optimización matemática y un dashboard Flask.
 
 ## 2. Componentes
 
@@ -93,6 +93,7 @@ La base `edificio_iot` conserva compatibilidad con los datos existentes.
 - `GET /api/estudiantes`: devuelve hasta 200 estudiantes, comenzando por los más recientes.
 - `POST /api/estudiantes`: valida y registra un estudiante; rechaza carnés duplicados.
 - `POST /api/optimizacion/transporte`: valida y resuelve una matriz de transporte con un método individual o en modo comparación.
+- `POST /api/optimizacion/recursos`: usa las lecturas MQTT actuales y un presupuesto para resolver la asignación lineal de energía.
 
 ## 9. Registro administrativo de estudiantes
 
@@ -116,7 +117,20 @@ El navegador admite matrices de 2 x 2 a 6 x 6; la API acepta hasta 20 x 20. Los 
 
 El cálculo se ejecuta en `backend/transport.py`, no requiere MongoDB y permanece aislado de MQTT, sensores y actuadores.
 
-## 11. Puesta en marcha
+## 11. Programación lineal basada en sensores
+
+La vista **Programación lineal** convierte las lecturas actuales en cotas de demanda para cuatro variables continuas:
+
+- `ventilacion`: porcentaje recomendado de ventilación, limitado por temperatura, humedad y gas.
+- `luz_zona1`, `luz_zona2` y `luz_zona3`: porcentajes recomendados de iluminación, limitados por el LDR. La proximidad aumenta la prioridad de la zona 1.
+
+El modelo maximiza `Z = suma(beneficio_i * x_i)`, sujeto a `suma(costo_i * x_i) <= presupuesto` y `0 <= x_i <= demanda_i`. Su estructura corresponde a una mochila fraccionaria, por lo que ordenar las variables según su beneficio marginal por unidad energética entrega la solución óptima. El presupuesto se expresa en unidades normalizadas de 0 a 315.
+
+Cuando el gas supera 300, su contribución a la función objetivo hace que la ventilación tenga prioridad y la interfaz muestra una advertencia. Esta recomendación no reemplaza la lógica de emergencia existente. La API no publica MQTT ni acciona GPIO; el operador conserva la decisión final.
+
+El cálculo se implementa en `backend/linear_optimizer.py`. La vista actualiza el plan cada diez segundos usando las lecturas más recientes recibidas por Flask.
+
+## 12. Puesta en marcha
 
 1. Definir `MONGO_URI` en el entorno.
 2. Instalar dependencias de `backend/requirements.txt` e `iot/requirements.txt`.
@@ -125,7 +139,7 @@ El cálculo se ejecuta en `backend/transport.py`, no requiere MongoDB y permanec
 5. Ejecutar `iot/main.py` desde la carpeta `iot`.
 6. Abrir `http://localhost:5000`.
 
-## 12. Pruebas recomendadas
+## 13. Pruebas recomendadas
 
 - Ejecutar los scripts individuales de DHT11, buzzer, LEDs y LCD.
 - Confirmar publicación y suscripción MQTT.
@@ -135,7 +149,9 @@ El cálculo se ejecuta en `backend/transport.py`, no requiere MongoDB y permanec
 - Registrar un estudiante, comprobar que aparece en la lista y verificar que un carné repetido devuelve un conflicto.
 - Cargar el ejemplo de transporte, comparar los cuatro métodos y verificar que cada suma de fila y columna respeta oferta y demanda.
 - Probar un caso no balanceado y confirmar que la respuesta informa el proveedor o destino ficticio.
+- Variar temperatura, humedad, gas, luz y presupuesto para comprobar que la asignación nunca excede la demanda ni la energía disponible.
+- Superar el umbral de gas de forma simulada y confirmar que el modelo prioriza ventilación y muestra la advertencia de emergencia.
 
-## 13. Límites del prototipo
+## 14. Límites del prototipo
 
 Los sensores de bajo costo requieren calibración y no sustituyen dispositivos certificados. Una instalación real necesita gabinete, protección eléctrica, evaluación de cargas, red confiable y procedimientos de mantenimiento.

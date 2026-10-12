@@ -1,12 +1,12 @@
-# AulaNexo
+# OptiAula IO
 
-Sistema IoT para seguridad ambiental, confort, acceso e iluminación eficiente en aulas y laboratorios.
+Sistema de apoyo a decisiones que aplica Investigación de Operaciones a datos obtenidos por sensores en aulas y laboratorios.
 
-## Propuesta renovada
+## Proyecto renovado
 
-AulaNexo adapta el prototipo de edificio inteligente a una necesidad concreta: administrar espacios educativos que suelen operar sin información ambiental, alertas tempranas ni automatización accesible. La solución conserva el hardware y el cableado original, pero reorganiza la experiencia alrededor de docentes, estudiantes, encargados de laboratorio y administradores.
+OptiAula IO utiliza el prototipo de arquitectura como plataforma de adquisición de datos, pero cambia el propósito central del sistema. Ya no se presenta solamente como un edificio inteligente: transforma lecturas ambientales en modelos de transporte, costo mínimo y programación lineal para apoyar decisiones de compra y asignación energética.
 
-La Raspberry Pi coordina sensores y actuadores, recibe gas y luz desde Arduino por USB serial, publica datos mediante MQTT, almacena historial en MongoDB Atlas y permite supervisión y control desde un dashboard Flask. El sistema funciona con Python y servicios multiplataforma, sin binarios específicos del procesador.
+La Raspberry Pi conserva la adquisición física, recibe gas y luz desde Arduino por USB serial y publica las lecturas mediante MQTT. Flask utiliza esos datos como parámetros de modelos de optimización, presenta resultados auditables y mantiene las funciones de monitoreo como soporte del análisis. El sistema funciona con Python y servicios multiplataforma, sin binarios específicos del procesador.
 
 ## Problemas que atiende
 
@@ -30,7 +30,7 @@ La Raspberry Pi coordina sensores y actuadores, recibe gas y luz desde Arduino p
 
 ## Propuesta de valor
 
-AulaNexo integra monitoreo, automatización y control remoto en un prototipo reutilizable. Un solo sistema muestra temperatura, humedad, gas, luz y proximidad, y responde mediante ventilación, iluminación, alarma y apertura de puerta. La institución puede probar la solución a pequeña escala antes de decidir una implementación por aula.
+OptiAula IO convierte datos físicos en recomendaciones cuantitativas. Una institución puede comparar proveedores mediante métodos de transporte y asignar un presupuesto energético mediante programación lineal, usando las condiciones reales del aula como entrada. El hardware existente actúa como fuente de datos y mecanismo de demostración; la aportación nueva es el sistema de optimización y apoyo a decisiones.
 
 ## Funciones principales
 
@@ -44,6 +44,7 @@ AulaNexo integra monitoreo, automatización y control remoto en un prototipo reu
 | Operación local | Ofrece LCD y cuatro botones para acciones esenciales sin depender del navegador. |
 | Registro académico | Permite registrar estudiantes por nombre y carné desde el dashboard. |
 | Optimización de compras | Compara Esquina Noroeste, Costo Mínimo, Vogel y una solución óptima para distribuir compras. |
+| Programación lineal | Asigna un presupuesto energético entre ventilación y tres zonas de iluminación usando datos de sensores. |
 
 ## Arquitectura
 
@@ -60,6 +61,8 @@ El navegador nunca accede directamente a GPIO. Los comandos siguen la ruta naveg
 El módulo administrativo utiliza `GET /api/estudiantes` y `POST /api/estudiantes`. Los registros se almacenan en la colección `students` de MongoDB Atlas y el carné se protege con un índice único.
 
 El módulo **Costo mínimo** recibe proveedores, productos o destinos, costos unitarios, oferta y demanda. `POST /api/optimizacion/transporte` permite ejecutar un método o comparar los cuatro. Si la oferta total difiere de la demanda, el backend agrega automáticamente una fila o columna ficticia de costo cero. Los cálculos no se almacenan ni interactúan con MQTT o GPIO.
+
+El módulo **Programación lineal** usa las últimas lecturas MQTT de temperatura, humedad, gas, luz y distancia. `POST /api/optimizacion/recursos` maximiza el beneficio de confort y seguridad sujeto a un presupuesto energético. La solución es exacta para este modelo de mochila fraccionaria y se actualiza cada diez segundos mientras la vista está abierta. Es una recomendación: nunca envía comandos a los actuadores.
 
 ## Conexiones físicas preservadas
 
@@ -90,6 +93,7 @@ Proyecto 1/
 ├── backend/
 │   ├── app.py
 │   ├── mongo.py
+│   ├── linear_optimizer.py
 │   ├── transport.py
 │   ├── requirements.txt
 │   ├── static/
